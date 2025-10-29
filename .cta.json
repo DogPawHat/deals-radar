@@ -1,0 +1,19 @@
+{
+  "projectName": "deals-radar",
+  "mode": "file-router",
+  "typescript": true,
+  "tailwind": true,
+  "packageManager": "pnpm",
+  "addOnOptions": {},
+  "git": true,
+  "version": 1,
+  "framework": "react-cra",
+  "chosenAddOns": [
+    "convex",
+    "form",
+    "shadcn",
+    "t3env",
+    "start",
+    "tanstack-query"
+  ]
+}
