@@ -8,6 +8,9 @@
  * @module
  */
 
+import type * as actions_crawl from "../actions/crawl.js";
+import type * as sources from "../sources.js";
+
 import type {
   ApiFromModules,
   FilterApi,
@@ -22,7 +25,10 @@ import type {
  * const myFunctionReference = api.myModule.myFunction;
  * ```
  */
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  "actions/crawl": typeof actions_crawl;
+  sources: typeof sources;
+}>;
 declare const fullApiWithMounts: typeof fullApi;
 
 export declare const api: FilterApi<
