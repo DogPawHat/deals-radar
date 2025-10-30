@@ -1,119 +1,166 @@
-# 🔥 Deals Radar — Real-Time Deal Tracking Website
+# 🔥 Deals Radar — Real-Time Deal Tracking Platform
 
-**Tech Stack:** [TanStack Start](https://tanstack.com/start) · [Convex](https://www.convex.dev) · [Firecrawl](https://firecrawl.dev) · [Netlify](https://www.netlify.com)
-
-**Hackathon:** [TanStack Start Hackathon 2025](https://www.convex.dev/hackathons/tanstack)
+**Tech Stack:** TanStack Start · Convex · Firecrawl · Netlify · Clerk  
+**Purpose:** Hackathon build (TanStack/Convex Hackathon)  
+**Status:** MVP-first, polished enough for judging, deletable after event
 
 ---
 
 ## 🎯 Concept
 
-**Deals Radar** is a real-time website that tracks online product deals from multiple sources.  
-It automatically crawls known “deal” pages, extracts product and pricing data, and updates a live dashboard showing discounts and price changes in real time.
+**Deals Radar** automatically discovers and surfaces real-time online shopping deals.  
+Admin users define deal sources (e.g. retailer deal pages).  
+Convex periodically crawls them (via Firecrawl actions), parses price & product data, and updates a live feed.
 
-Convex powers the live data layer and background tasks.  
-Firecrawl extracts structured deal information from retail pages.  
-Netlify hosts both the app and serverless webhooks for ingestion.
-
----
-
-## 🧩 Stack Integration
-
-| Service            | Role                                 | Why                                                                    |
-| ------------------ | ------------------------------------ | ---------------------------------------------------------------------- |
-| **TanStack Start** | Frontend framework                   | Modern React meta-framework for routing, data loading, and fast DX     |
-| **Convex**         | Backend + realtime DB + scheduler    | Stores deals, runs cron jobs to trigger crawls, streams live updates   |
-| **Firecrawl**      | Web crawling + structured extraction | Pulls product title, price, URL, and image from deal pages             |
-| **Netlify**        | Hosting + serverless functions       | Hosts the frontend and provides an API endpoint for Firecrawl webhooks |
+The public can browse deals; admins control the sources.
 
 ---
 
 ## 🧠 Core Features
 
-- 🕒 **Automatic Crawling:** Convex cron job triggers Firecrawl to crawl deal pages every few minutes.
-- 🧾 **Structured Extraction:** Firecrawl returns JSON with `{ title, url, price, msrp, currency, image }`.
-- 💾 **Persistent Storage:** Convex stores deals, price history, and sources.
-- ⚡ **Realtime Updates:** When Convex data changes, the UI updates instantly.
-- 📈 **Price History:** Track price trends and discounts over time.
-- 🏷️ **Filtering & Sorting:** Filter by merchant, discount %, and time added.
-- 📣 **(Stretch)** Deal alerts, upvotes, or affiliate integration.
+- 🔍 **Public deals feed** (no auth required)
+- ⏱️ **Automated crawlers** (Convex cron + actions)
+- 🔧 **Admin portal** to manage unlimited sources
+- ⚖️ **Always respect robots.txt**
+- 📈 **Price history per product**
+- 📉 **Display % off and hide < 5%**
+- 🛑 Toast if crawl blocked by robots
+- 🗃️ **Convex DB + Realtime UI**
+- 🌐 Hosted on **Netlify**
+- 🔐 **Clerk** for admin auth
+
+> **Amazon is excluded** from MVP due to ToS — allowed sources only.
 
 ---
 
-## 🧱 Data Model (Convex)
+## 🎨 Product Experience
+
+### Public
+
+- Grid/List of deals with price + % off
+- Tabs: **Newest | Biggest drop | Price | All**
+- Image or placeholder
+- Clicking a deal → detail page w/ price history chart
+
+### Admin
+
+- Clerk login (configured in Clerk dashboard, **out of scope**)
+- `/admin/sources`
+  - List of all sources
+  - Add/Edit source
+  - View **robots.txt rules**
+  - **Dry-run crawl** preview (no DB write)
+  - Manual **Run Now** (3-min cooldown)
+  - Show crawl jobs & error logs
+  - Copy raw error details
+
+---
+
+## 💾 Data Model
 
 ```ts
-deals: {
+deals {
   _id: Id<"deals">,
-  merchant: string,
   title: string,
   url: string,
+  canonicalUrl: string,
+  merchant: string,
   image?: string,
   currentPrice: number,
   currency: string,
   msrp?: number,
   percentOff?: number,
-  tags: string[],
   firstSeenAt: number,
-  lastSeenAt: number,
-  score: number
+  lastSeenAt: number
 }
 
-priceHistory: {
+priceHistory {
   _id: Id<"priceHistory">,
   dealId: Id<"deals">,
   price: number,
   at: number
 }
 
-sources: {
+sources {
   _id: Id<"sources">,
   name: string,
   url: string,
   enabled: boolean,
-  crawlEveryMins: number,
+  crawlEveryMins: number,        // default 10
   lastCrawlAt?: number,
-  schema: object
+  schema: object,                // Firecrawl extraction schema
+  robotsTxt?: string,
+  robotsCheckedAt?: number,
+  robotsMatched?: {
+    allow: string[],
+    disallow: string[]
+  },
+  notes?: string
+}
+
+crawlJobs {
+  _id: Id<"crawlJobs">,
+  sourceId: Id<"sources">,
+  enqueuedAt: number,
+  startedAt?: number,
+  finishedAt?: number,
+  status: "queued" | "running" | "done" | "failed",
+  resultCount?: number,
+  blockedByRobots?: boolean,
+  blockedRule?: string,
+  errorDetails?: string,
+  attempt: number
 }
 ```
 
----
+### Dedup logic
 
-## 🔁 Workflow
-
-1. **Convex cron job** (`crawlTick`) runs every N minutes.
-2. It reads active `sources` and sends Firecrawl extraction requests.
-3. **Firecrawl** scrapes and returns structured results to a **Netlify webhook**.
-4. The **webhook** calls `convex.mutation("deals/upsertBatch", payload)` to update the DB.
-5. **TanStack Start UI** subscribes to live queries (`useQuery(api.deals.live)`).
-6. New or updated deals appear instantly in the user’s dashboard.
-
----
-
-## 🧮 Ranking Formula
-
-```js
-percentOff = msrp ? ((msrp - currentPrice) / msrp) * 100 : null;
-freshness = exp(-minutesSinceLastSeen / 240);
-dropBoost = clamp(percentOff / 40, 0, 1);
-score = 0.6 * freshness + 0.4 * dropBoost;
+```
+key = hash(canonicalUrl + title)
 ```
 
-Used for sorting “Top Deals”.
+---
+
+## 🔁 Crawl Pipeline
+
+### Flow
+
+1. Cron (`crawlTick`) checks due sources
+2. Enqueues crawlJobs
+3. Queue drain respects limits:
+   - max concurrent = **3**
+   - max 10 jobs/min
+   - retries = **3** (1m, 4m, 10m)
+
+4. `runFirecrawl` action:
+   - Fetch Firecrawl with schema
+   - If robots-blocked → mark and stop
+   - Parse items
+   - Write deals + history
+
+5. UI updates live
+
+### Robots Handling
+
+- Always fetch robots.txt on source save
+- Parse and store allow/disallow rules
+- Show rules in Admin only
+- Manual run toast if blocked
 
 ---
 
-## 💻 UI Pages
+## 📊 Filtering & Display Rules
 
-| Route    | Description                                |
-| -------- | ------------------------------------------ |
-| `/`      | Live deals feed with filters and sorting   |
-| `/d/:id` | Deal details page with price history       |
-| `/add`   | Add or manage source URLs (for admin/demo) |
+- Hide deals < **5%** off
+- Tabs:
+  - **Newest** — `lastSeenAt DESC`
+  - **Biggest drop** — `% off DESC`
+  - **Price** — `price ASC`
+  - **All**
 
 ---
 
-## ⚙️ Firecrawl Schema Example
+## 📦 Firecrawl Schema Example
 
 ```json
 {
@@ -141,68 +188,54 @@ Used for sorting “Top Deals”.
 
 ---
 
-## 🕹️ Demo Script (2–3 min)
+## 🧠 UX Notes
 
-1. Add a new source (e.g. “Amazon Tech Deals”).
-2. Cron triggers Firecrawl → webhook updates Convex.
-3. Deals appear live on dashboard with prices and discounts.
-4. Show price drop → live update in UI.
-5. Show another user’s browser instantly syncing the same data.
-
----
-
-## 🚀 Deployment
-
-- **Frontend:** Netlify static hosting (build via `pnpm build`).
-- **Functions:** `/netlify/functions/firecrawl-webhook.ts`.
-- **Env Vars:**
-  - `CONVEX_DEPLOYMENT`
-  - `CONVEX_URL`
-  - `FIRECRAWL_API_KEY`
-  - `WEBHOOK_SECRET`
-
-Redirects for SPA routing:
-
-```toml
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-```
+- Disabled “Run Now” button shows time remaining tooltip
+- Deal image fallback: neutral placeholder
+- Copy error button on crawl failures
+- Bulk-delete sources **not needed** (hackathon)
 
 ---
 
-## ✅ MVP Checklist
+## ⚙️ Deployment
 
-- [ ] Convex schema + indexes (`deals.by_url`)
-- [ ] Firecrawl schema for one reliable source
-- [ ] Cron job + webhook working end-to-end
-- [ ] Live deal list + filters
-- [ ] Price history chart
-- [ ] Netlify deploy + environment config
+- **Netlify** build + deploy
+- Convex project + environment variables
+- Clerk project configured in dashboard
 
----
-
-## 🌟 Stretch Goals
-
-- Email/Discord alerts when a tracked deal drops by X%.
-- User “watch” lists and notifications.
-- Community upvotes to boost hot deals.
-- Affiliate tracking (if rules permit).
+No seeding — **sources are admin-added only**.
 
 ---
 
-## ⚖️ Legal & Ethical Notes
+## 📄 Legal / ToS
 
-- Respect **robots.txt** and **terms of service** of all sources.
-- Prefer open feeds or sites with API access.
-- Clearly mark demo data if real scraping is restricted.
+- **Always respect robots.txt**
+- Exclude Amazon entirely (MVP)
+- No scraping sites without permission
 
 ---
 
-## 🧭 Summary
+## 🧹 What we do _not_ build
 
-**Deals Radar** shows the power of real-time web apps built with
-**TanStack Start**, **Convex**, **Firecrawl**, and **Netlify**.
+- Public source submission
+- Affiliate links
+- Notifications
+- FX conversion
+- Data cleanup cron
+- Multi-role permissions
+- Full mobile polish (just responsive enough)
 
-> 🔄 Always fresh, always live — the easiest way to track online deals dynamically.
+This is a **hackathon build** — ship fast.
+
+---
+
+## ✅ MVP Complete When
+
+- [ ] Public deals feed with filtering
+- [ ] Admin can add/edit sources
+- [ ] Robots check on save
+- [ ] Convex cron + actions working
+- [ ] Deals + price history persist
+- [ ] Manual run w/ cooldown & toast
+- [ ] Respect robots.txt always
+- [ ] Placeholder images
