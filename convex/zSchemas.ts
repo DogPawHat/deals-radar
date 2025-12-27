@@ -1,4 +1,4 @@
-import { z, toJSONSchema, ZodSchema } from "zod/v4";
+import { z, toJSONSchema } from "zod/v4";
 
 /**
  * Zod schema for extracting deal information from web pages via Firecrawl.
