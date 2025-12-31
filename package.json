@@ -10,13 +10,15 @@
     "format": "prettier --write .",
     "lint": "oxlint --type-aware",
     "lint:fix": "oxlint --type-aware --fix",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "tsgo --noEmit",
+    "prepare": "effect-language-service patch"
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",
     "@convex-dev/react-query": "0.1.0",
     "@convex-dev/workflow": "^0.3.3",
     "@convex-dev/workpool": "^0.3.0",
+    "@effect/language-service": "^0.63.2",
     "@fontsource-variable/nunito-sans": "^5.2.7",
     "@mendable/firecrawl-js": "^4.10.0",
     "@t3-oss/env-core": "^0.13.10",
@@ -34,6 +36,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.31.2",
+    "effect": "^3.19.13",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
@@ -52,6 +55,7 @@
     "@types/react-dom": "^19.2.3",
     "@typescript/native-preview": "7.0.0-dev.20251227.1",
     "@vitejs/plugin-react": "^5.1.2",
+    "effect-solutions": "^0.4.13",
     "jsdom": "^27.4.0",
     "oxlint": "^1.36.0",
     "oxlint-tsgolint": "^0.10.0",
