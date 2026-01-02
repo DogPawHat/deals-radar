@@ -8,13 +8,13 @@
  * @module
  */
 
+import type * as confect from "../confect.js";
 import type * as crawls from "../crawls.js";
 import type * as deals from "../deals.js";
+import type * as eSchemas from "../eSchemas.js";
 import type * as firecrawlNodeActions from "../firecrawlNodeActions.js";
 import type * as index from "../index.js";
 import type * as stores from "../stores.js";
-import type * as types from "../types.js";
-import type * as zSchemas from "../zSchemas.js";
 
 import type {
   ApiFromModules,
@@ -23,13 +23,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  confect: typeof confect;
   crawls: typeof crawls;
   deals: typeof deals;
+  eSchemas: typeof eSchemas;
   firecrawlNodeActions: typeof firecrawlNodeActions;
   index: typeof index;
   stores: typeof stores;
-  types: typeof types;
-  zSchemas: typeof zSchemas;
 }>;
 
 /**

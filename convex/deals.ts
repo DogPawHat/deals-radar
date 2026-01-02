@@ -1,11 +1,22 @@
-import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { Id } from "@rjdellecese/confect/server";
+import { query, ConfectQueryCtx } from "./confect";
+import { Schema, Effect } from "effect";
+import { confectSchema } from "./schema";
+
+class GetDealsForStoreArgs extends Schema.Class<GetDealsForStoreArgs>("GetDealsForStoreArgs")({
+  storeId: Id.Id("stores"),
+}) {}
+
+const GetDealsForStoreResult = Schema.Array(confectSchema.tableSchemas.deals.withSystemFields);
 
 export const getDealsForStore = query({
-  args: { storeId: v.id("stores") },
-  handler: async (ctx, { storeId }) => {
-    return ctx.db
+  args: GetDealsForStoreArgs,
+  returns: GetDealsForStoreResult,
+  handler: Effect.fn("getDealsForStore")(function* ({ storeId }) {
+    const { db } = yield* ConfectQueryCtx;
+    return yield* db
       .query("deals")
-      .withIndex("by_storeId", (q) => q.eq("storeId", storeId));
-  },
+      .withIndex("by_storeId", (q) => q.eq("storeId", storeId))
+      .collect();
+  }),
 });

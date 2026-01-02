@@ -5,12 +5,22 @@
    */
   "compilerOptions": {
     /* These settings are not required by Convex and can be modified. */
+    "esModuleInterop": true,
     "allowJs": true,
+    "resolveJsonModule": true,
     "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": false,
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ],
 
     /* These compiler options are required by Convex */
     "target": "ESNext",

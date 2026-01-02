@@ -1,94 +1,125 @@
-import { internalMutation, mutation } from "./_generated/server";
-import { v } from "convex/values";
-import { workflow } from "./index";
+import { Effect, Schema, Option } from "effect";
 import { internal } from "./_generated/api";
-import { vWorkflowId } from "@convex-dev/workflow";
-import { vResultValidator } from "@convex-dev/workpool";
-import { DealExtraction } from "./zSchemas";
+import { v } from "convex/values";
+import { internalMutation, mutation, ConfectMutationCtx } from "./confect";
+import { Id } from "@rjdellecese/confect/server";
+import { workflow } from "./index";
+import { DealExtractions } from "./eSchemas";
 
-async function createHash(input: string): Promise<string> {
-  // Encode to Uint8Array
-  const data = new TextEncoder().encode(input);
+class GenericSucessType extends Schema.TaggedClass<GenericSucessType>()("GenericSucessType", {
+  success: Schema.Literal(true),
+}) {}
 
-  // Compute digest
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+// Tracking parameters to drop
+const DROP_PARAMS = new Set([
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "gclid",
+  "fbclid",
+  "mc_eid",
+  "mc_cid",
+  "ref",
+  "referrer",
+  "aff",
+  "aff_id",
+  "affiliate",
+  "utm_id",
+  "utm_reader",
+  "utm_viz_id",
+  "utm_pubreferrer",
+  "oly_enc_id",
+  "oly_anon_id",
+  "ascsrc",
+  "cmp",
+  "_branch_match_id",
+  "_branch_referrer",
+  "igshid",
+  "mkt_tok",
+  "spm",
+]);
 
-  // Convert ArrayBuffer → hex string
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return hashHex;
-}
+class CreateHashError extends Schema.TaggedError<CreateHashError>()("CreateHashError", {
+  message: Schema.String,
+  error: Schema.Defect,
+}) {}
 
-function normalizeUrl(raw: string): string {
-  const u = new URL(raw);
+class NormalizeUrlError extends Schema.TaggedError<NormalizeUrlError>()("NormalizeUrlError", {
+  message: Schema.String,
+  error: Schema.Defect,
+}) {}
 
-  // Normalize host and ports
-  u.hostname = u.hostname.toLowerCase();
-  if (
-    (u.protocol === "http:" && u.port === "80") ||
-    (u.protocol === "https:" && u.port === "443")
-  )
-    u.port = "";
+// SHA-256 hash using Web Crypto API
+const createHash = (input: string): Effect.Effect<string, CreateHashError> =>
+  Effect.tryPromise({
+    try: async () => {
+      const data = new TextEncoder().encode(input);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    },
+    catch: (error) => CreateHashError.make({ message: `Hashing failed: ${error}`, error }),
+  });
 
-  // Drop fragment
-  u.hash = "";
+// Normalize URL with Effect
+const normalizeUrl = (raw: string): Effect.Effect<string, NormalizeUrlError> =>
+  Effect.try({
+    try: () => {
+      const u = new URL(raw);
 
-  // Remove common tracking params, keep others (sorted)
-  const drop = new Set([
-    "utm_source",
-    "utm_medium",
-    "utm_campaign",
-    "utm_term",
-    "utm_content",
-    "gclid",
-    "fbclid",
-    "mc_eid",
-    "mc_cid",
-    "ref",
-    "referrer",
-    "aff",
-    "aff_id",
-    "affiliate",
-    "utm_id",
-    "utm_reader",
-    "utm_viz_id",
-    "utm_pubreferrer",
-    "oly_enc_id",
-    "oly_anon_id",
-    "ascsrc",
-    "cmp",
-    "_branch_match_id",
-    "_branch_referrer",
-    "igshid",
-    "mkt_tok",
-    "spm",
-  ]);
-  const kept = new URLSearchParams();
-  for (const [k, v] of u.searchParams.entries())
-    if (!drop.has(k)) kept.append(k, v);
-  const keptSorted = new URLSearchParams(
-    [...kept.entries()].sort((a, b) => a[0].localeCompare(b[0])),
-  );
-  u.search = keptSorted.toString() ? `?${keptSorted.toString()}` : "";
+      // Normalize host
+      u.hostname = u.hostname.toLowerCase();
 
-  // Normalize trailing slash (except root)
-  if (u.pathname.endsWith("/") && u.pathname !== "/")
-    u.pathname = u.pathname.replace(/\/+$/, "");
+      // Remove default ports
+      if (
+        (u.protocol === "http:" && u.port === "80") ||
+        (u.protocol === "https:" && u.port === "443")
+      ) {
+        u.port = "";
+      }
 
-  const canonicalUrl = u.toString();
+      // Drop fragment
+      u.hash = "";
 
-  return canonicalUrl;
-}
+      // Filter and sort query parameters
+      const kept = new URLSearchParams();
+      for (const [k, v] of u.searchParams.entries()) {
+        if (!DROP_PARAMS.has(k)) {
+          kept.append(k, v);
+        }
+      }
 
-async function buildDedupKey(url: string, title: string) {
-  const canonicalUrl = normalizeUrl(url);
-  const normalizedTitle = title.trim().toLowerCase().replace(/\s+/g, " ");
-  const keyInput = `${canonicalUrl}|${normalizedTitle}`;
-  const dedupKey = await createHash(keyInput);
-  return { canonicalUrl, dedupKey };
-}
+      const keptSorted = new URLSearchParams(
+        [...kept.entries()].sort((a, b) => a[0].localeCompare(b[0])),
+      );
+
+      u.search = keptSorted.toString() ? `?${keptSorted.toString()}` : "";
+
+      // Normalize trailing slash (except root)
+      if (u.pathname.endsWith("/") && u.pathname !== "/") {
+        u.pathname = u.pathname.replace(/\/+$/, "");
+      }
+
+      return u.toString();
+    },
+    catch: (error) =>
+      NormalizeUrlError.make({ message: `URL normalization failed: ${error}`, error }),
+  });
+
+// Normalize title
+const normalizeTitle = (title: string): string => title.trim().toLowerCase().replace(/\s+/g, " ");
+
+// Build deduplication key using Effect pipeline
+const buildDedupKey = (url: string, title: string) =>
+  Effect.gen(function* () {
+    const canonicalUrl = yield* normalizeUrl(url);
+    const normalizedTitle = normalizeTitle(title);
+    const keyInput = `${canonicalUrl}|${normalizedTitle}`;
+    const dedupKey = yield* createHash(keyInput);
+    return { canonicalUrl, dedupKey };
+  });
 
 export const extractSourceWorkflow = workflow.define({
   args: {
@@ -98,24 +129,20 @@ export const extractSourceWorkflow = workflow.define({
     }),
   },
   handler: async (step, args): Promise<void> => {
-    const job = await step.runAction(
-      internal.firecrawlNodeActions.startExtract,
-      {
-        urls: [args.store.url],
-      },
-    );
+    const job = await step.runAction(internal.firecrawlNodeActions.startAgent, {
+      urls: [args.store.url],
+    });
 
     let attempts = 0;
-    let data: Array<DealExtraction> | null = null;
+    let data: typeof DealExtractions.Type | null = null;
     while (attempts < 10 && data == null) {
       attempts++;
-      const result = await step.runAction(
-        internal.firecrawlNodeActions.getExtractData,
-        { jobId: job.jobId },
-      );
-      if (result.status === "completed") {
+      const result = await step.runAction(internal.firecrawlNodeActions.getAgentData, {
+        jobId: job.jobId,
+      });
+      if (result._tag === "AgentStateCompleted") {
         data = result.data;
-      } else if (result.status === "failed") {
+      } else {
         throw new Error("Firecrawl extraction failed");
       }
     }
@@ -131,86 +158,122 @@ export const extractSourceWorkflow = workflow.define({
   },
 });
 
-export const finishManualCrawl = internalMutation({
-  args: {
-    workflowId: vWorkflowId,
-    result: vResultValidator,
-    context: v.object({
-      storeId: v.id("stores"),
-    }),
-  },
-  handler: async (ctx, args) => {
-    await ctx.db.patch(args.context.storeId, {
-      lastCrawlAt: Date.now(),
-      isCrawling: false,
-    });
-  },
-});
-
-export const updateDealsForStore = internalMutation({
-  args: {
-    storeId: v.id("stores"),
-    deals: v.array(
-      v.object({
-        title: v.string(),
-        url: v.string(),
-        image: v.optional(v.string()),
-        price: v.number(),
-        currency: v.string(),
-        msrp: v.optional(v.number()),
+class FinishManualCrawlArgs extends Schema.Struct({
+  workflowId: Id.Id("workflows"),
+  result: Schema.Struct({
+    deals: Schema.Array(
+      Schema.Struct({
+        title: Schema.String,
+        url: Schema.String,
+        image: Schema.optional(Schema.String),
+        price: Schema.Number,
+        currency: Schema.String,
       }),
     ),
-  },
-  handler: async (ctx, args) => {
-    for (const deal of args.deals) {
-      const dedupKey = await buildDedupKey(deal.url, deal.title);
-      const existingDeal = await ctx.db
-        .query("deals")
-        .withIndex("by_dedupKey_for_store", (q) =>
-          q.eq("dedupKey", dedupKey.dedupKey).eq("storeId", args.storeId),
-        )
-        .unique();
+  }),
+  context: Schema.Struct({
+    storeId: Id.Id("stores"),
+  }),
+}) {}
 
-      if (existingDeal) {
-        await ctx.db.patch(existingDeal._id, {
-          ...deal,
-          storeId: args.storeId,
-          canonicalUrl: dedupKey.canonicalUrl,
-          dedupKey: dedupKey.dedupKey,
-        });
-      } else {
-        await ctx.db.insert("deals", {
-          ...deal,
-          storeId: args.storeId,
-          canonicalUrl: dedupKey.canonicalUrl,
-          dedupKey: dedupKey.dedupKey,
-        });
-      }
-    }
-  },
+export const finishManualCrawl = internalMutation({
+  args: FinishManualCrawlArgs,
+  returns: GenericSucessType,
+  handler: ({ context }) =>
+    Effect.gen(function* () {
+      const ctx = yield* ConfectMutationCtx;
+      yield* ctx.db.patch(context.storeId, {
+        lastCrawlAt: Date.now(),
+        isCrawling: false,
+      });
+      return GenericSucessType.make({ success: true });
+    }),
 });
 
+class UpdateDealsForStoreArgs extends Schema.Struct({
+  storeId: Id.Id("stores"),
+  deals: Schema.Array(
+    Schema.Struct({
+      title: Schema.String,
+      url: Schema.String,
+      image: Schema.optional(Schema.String),
+      price: Schema.Number,
+      currency: Schema.String,
+    }),
+  ),
+}) {}
+
+export const updateDealsForStore = internalMutation({
+  args: UpdateDealsForStoreArgs,
+  returns: GenericSucessType,
+  handler: Effect.fn("updateDealsForStore")(function* ({ storeId, deals }) {
+    const ctx = yield* ConfectMutationCtx;
+
+    yield* Effect.all(
+      deals.map((deal) =>
+        Effect.gen(function* () {
+          const dedupKeyResult = yield* buildDedupKey(deal.url, deal.title);
+
+          const existingDealOption = yield* ctx.db
+            .query("deals")
+            .withIndex("by_dedupeKey_for_store", (q) =>
+              q.eq("dedupKey", dedupKeyResult.dedupKey).eq("storeId", storeId),
+            )
+            .unique();
+
+          yield* Option.match(existingDealOption, {
+            onNone: () =>
+              ctx.db.insert("deals", {
+                ...deal,
+                storeId,
+                canonicalUrl: dedupKeyResult.canonicalUrl,
+                dedupKey: dedupKeyResult.dedupKey,
+              }),
+            onSome: (existingDeal) =>
+              ctx.db.patch(existingDeal._id, {
+                ...deal,
+                storeId,
+                canonicalUrl: dedupKeyResult.canonicalUrl,
+                dedupKey: dedupKeyResult.dedupKey,
+              }),
+          });
+        }),
+      ),
+      { concurrency: 5 },
+    );
+    return GenericSucessType.make({ success: true });
+  }),
+});
+
+class BeginManualCrawlArgs extends Schema.Class<BeginManualCrawlArgs>("BeginManualCrawlArgs")({
+  storeId: Id.Id("stores"),
+}) {}
+
+class CrawlInProgressError extends Schema.TaggedError<CrawlInProgressError>("CrawlInProgressError")(
+  "CrawlInProgressError",
+  {
+    message: Schema.String,
+    storeId: Id.Id("stores"),
+  },
+) {}
+
 export const beginManualCrawl = mutation({
-  args: {
-    storeId: v.id("stores"),
-  },
-  handler: async (ctx, args) => {
-    const store = await ctx.db.get(args.storeId);
-    if (!store) {
-      throw new Error(`Store ${args.storeId} not found`);
-    }
+  args: BeginManualCrawlArgs,
+  returns: GenericSucessType,
+  handler: Effect.fn("beginManualCrawl")(function* ({ storeId }) {
+    const { db } = yield* ConfectMutationCtx;
+    const storeOption = yield* db.get(storeId);
+    const store = yield* storeOption;
+
     if (store.isCrawling) {
-      throw new Error("Crawl already in progress for this store.");
+      return yield* CrawlInProgressError.make({
+        message: "Crawl already in progress for this store",
+        storeId: store._id,
+      });
     }
-    await ctx.db.patch(args.storeId, {
-      isCrawling: true,
-      lastCrawlAt: Date.now(),
+    yield* db.patch(storeId, {
+      url: store.url,
     });
-    await workflow.start(ctx, internal.crawls.extractSourceWorkflow, {
-      store: {
-        _id: args.storeId,
-        url: store.url,
-      },
-    });
-  },
+    return GenericSucessType.make({ success: true });
+  }),
 });

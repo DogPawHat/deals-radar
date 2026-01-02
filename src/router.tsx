@@ -31,9 +31,7 @@ export function getRouter() {
     scrollRestoration: true,
     Wrap: (props: { children: React.ReactNode }) => (
       <QueryClientProvider client={queryClient}>
-        <ConvexProvider client={convexQueryClient.convexClient}>
-          {props.children}
-        </ConvexProvider>
+        <ConvexProvider client={convexQueryClient.convexClient}>{props.children}</ConvexProvider>
       </QueryClientProvider>
     ),
   });
