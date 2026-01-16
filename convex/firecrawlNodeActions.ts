@@ -1,11 +1,10 @@
 "use node";
 
 import Firecrawl from "@mendable/firecrawl-js";
-import { v } from "convex/values";
 
 import { internalAction } from "./confect";
 
-import { Effect, JSONSchema, Context, Schema, Layer, Match, Config, Redacted, Exit } from "effect";
+import { Effect, JSONSchema, Context, Schema, Layer, Match, Config, Redacted } from "effect";
 import {
   DealExtractions,
   AgentJob,
@@ -136,7 +135,10 @@ class FirecrawlOperationsContext extends Context.Tag(
         });
       });
 
-      return FirecrawlOperationsContext.of({ getAgentStatus, startAgent });
+      return FirecrawlOperationsContext.of({
+        getAgentStatus,
+        startAgent,
+      });
     }),
   );
 }

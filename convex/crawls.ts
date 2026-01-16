@@ -60,7 +60,11 @@ const createHash = (input: string): Effect.Effect<string, CreateHashError> =>
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
     },
-    catch: (error) => CreateHashError.make({ message: `Hashing failed: ${error}`, error }),
+    catch: (error) =>
+      CreateHashError.make({
+        message: `Hashing failed`,
+        error,
+      }),
   });
 
 // Normalize URL with Effect
@@ -105,7 +109,10 @@ const normalizeUrl = (raw: string): Effect.Effect<string, NormalizeUrlError> =>
       return u.toString();
     },
     catch: (error) =>
-      NormalizeUrlError.make({ message: `URL normalization failed: ${error}`, error }),
+      NormalizeUrlError.make({
+        message: `URL normalization failed`,
+        error,
+      }),
   });
 
 // Normalize title
