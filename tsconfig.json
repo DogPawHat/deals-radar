@@ -1,5 +1,5 @@
 {
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
@@ -16,7 +16,6 @@
 
     /* Strictness */
     "strict": true,
-    "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
 

@@ -59,12 +59,7 @@ const componentVariants = cva("base-classes", {
 });
 
 function Component({ className, variant, size, ...props }) {
-  return (
-    <Primitive
-      className={cn(componentVariants({ variant, size, className }))}
-      {...props}
-    />
-  );
+  return <Primitive className={cn(componentVariants({ variant, size, className }))} {...props} />;
 }
 
 export { Component, componentVariants };
