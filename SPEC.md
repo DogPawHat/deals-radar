@@ -1,166 +1,158 @@
-# 🔥 Deals Radar — Real-Time Deal Tracking Platform
+# Deals Radar
 
-**Tech Stack:** TanStack Start · Convex · Firecrawl · Netlify · Clerk  
-**Purpose:** Hackathon build (TanStack/Convex Hackathon)  
-**Status:** MVP-first, polished enough for judging, deletable after event
+A website that shows the latest deals from a set of websites.
 
 ---
 
-## 🎯 Concept
-
-**Deals Radar** automatically discovers and surfaces real-time online shopping deals.  
-Admin users define deal sources (e.g. retailer deal pages).  
-Convex periodically crawls them (via Firecrawl actions), parses price & product data, and updates a live feed.
-
-The public can browse deals; admins control the sources.
-
----
-
-## 🧠 Core Features
-
-- 🔍 **Public deals feed** (no auth required)
-- ⏱️ **Automated crawlers** (Convex cron + actions)
-- 🔧 **Admin portal** to manage unlimited sources
-- ⚖️ **Always respect robots.txt**
-- 📈 **Price history per product**
-- 📉 **Display % off and hide < 5%**
-- 🛑 Toast if crawl blocked by robots
-- 🗃️ **Convex DB + Realtime UI**
-- 🌐 Hosted on **Netlify**
-- 🔐 **Clerk** for admin auth
-
-> **Amazon is excluded** from MVP due to ToS — allowed sources only.
-
----
-
-## 🎨 Product Experience
+## Features
 
 ### Public
 
-- Grid/List of deals with price + % off
-- Tabs: **Newest | Biggest drop | Price | All**
-- Image or placeholder
-- Clicking a deal → detail page w/ price history chart
+- Browse deals in a grid/list view with price + % off
+- Filter by tabs: **Newest | Biggest drop | Price | All**
+- Click a deal → detail page with price history chart
+- Image or placeholder for each deal
+- Only shows deals with ≥5% discount
 
 ### Admin
 
-- Clerk login (configured in Clerk dashboard, **out of scope**)
-- `/admin/sources`
-  - List of all sources
+- Protected via login
+- `/admin/sources` — manage deal sources:
+  - List all sources
   - Add/Edit source
-  - View **robots.txt rules**
-  - **Dry-run crawl** preview (no DB write)
+  - View robots.txt rules
+  - Dry-run crawl preview (no DB write)
   - Manual **Run Now** (3-min cooldown)
   - Show crawl jobs & error logs
   - Copy raw error details
 
 ---
 
-## 💾 Data Model
+## Functional Requirements
 
-```ts
-deals {
-  _id: Id<"deals">,
-  title: string,
-  url: string,
-  canonicalUrl: string,
-  merchant: string,
-  image?: string,
-  currentPrice: number,
-  currency: string,
-  msrp?: number,
-  percentOff?: number,
-  firstSeenAt: number,
-  lastSeenAt: number
-}
+### Crawl Pipeline
 
-priceHistory {
-  _id: Id<"priceHistory">,
-  dealId: Id<"deals">,
-  price: number,
-  at: number
-}
+1. Cron (`crawlTick`) checks due sources
+2. Enqueues crawlJobs
+3. Queue limits:
+   - Max concurrent: 3
+   - Max 10 jobs/min
+   - Retries: 3 (1m, 4m, 10m backoff)
+4. `runFirecrawl` action:
+   - Fetch with schema
+   - If robots-blocked → mark and stop
+   - Parse items
+   - Write deals + price history
+5. UI updates live via Convex subscriptions
 
-sources {
-  _id: Id<"sources">,
-  name: string,
-  url: string,
-  enabled: boolean,
-  crawlEveryMins: number,        // default 10
-  lastCrawlAt?: number,
-  schema: object,                // Firecrawl extraction schema
-  robotsTxt?: string,
-  robotsCheckedAt?: number,
-  robotsMatched?: {
-    allow: string[],
-    disallow: string[]
-  },
-  notes?: string
-}
+### Robots Handling
 
-crawlJobs {
-  _id: Id<"crawlJobs">,
-  sourceId: Id<"sources">,
-  enqueuedAt: number,
-  startedAt?: number,
-  finishedAt?: number,
-  status: "queued" | "running" | "done" | "failed",
-  resultCount?: number,
-  blockedByRobots?: boolean,
-  blockedRule?: string,
-  errorDetails?: string,
-  attempt: number
-}
-```
+- Fetch robots.txt on source save
+- Parse and store allow/disallow rules
+- Show rules in Admin only
+- Toast notification if manual run is blocked
 
-### Dedup logic
+### Filtering & Display
+
+- Hide deals < 5% off
+- Tabs:
+  - **Newest** — `lastSeenAt DESC`
+  - **Biggest drop** — `percentOff DESC`
+  - **Price** — `currentPrice ASC`
+  - **All**
+
+### Deduplication
 
 ```
 key = hash(canonicalUrl + title)
 ```
 
----
+### Constraints
 
-## 🔁 Crawl Pipeline
-
-### Flow
-
-1. Cron (`crawlTick`) checks due sources
-2. Enqueues crawlJobs
-3. Queue drain respects limits:
-   - max concurrent = **3**
-   - max 10 jobs/min
-   - retries = **3** (1m, 4m, 10m)
-
-4. `runFirecrawl` action:
-   - Fetch Firecrawl with schema
-   - If robots-blocked → mark and stop
-   - Parse items
-   - Write deals + history
-
-5. UI updates live
-
-### Robots Handling
-
-- Always fetch robots.txt on source save
-- Parse and store allow/disallow rules
-- Show rules in Admin only
-- Manual run toast if blocked
+- Always respect robots.txt
+- Amazon excluded due to ToS restrictions
+- No scraping sites without permission
 
 ---
 
-## 📊 Filtering & Display Rules
+## Data Model
 
-- Hide deals < **5%** off
-- Tabs:
-  - **Newest** — `lastSeenAt DESC`
-  - **Biggest drop** — `% off DESC`
-  - **Price** — `price ASC`
-  - **All**
+Schemas defined using Effect Schema via Confect (`convex/schema.ts`).
+
+```ts
+// deals
+deals: defineTable(
+  Schema.Struct({
+    storeId: Id.Id("stores"),
+    title: Schema.String,
+    url: Schema.String,
+    canonicalUrl: Schema.String,
+    dedupKey: Schema.String,
+    image: Schema.optional(Schema.String),
+    price: Schema.Number,
+    currency: Schema.String,
+    msrp: Schema.optional(Schema.Number),
+  }),
+)
+  .index("by_storeId", ["storeId"])
+  .index("by_dedupeKey_for_store", ["dedupKey", "storeId"])
+
+// stores
+stores: defineTable(
+  Schema.Struct({
+    name: Schema.String,
+    url: Schema.String,
+    lastCrawlAt: Schema.optional(Schema.Number),
+    isCrawling: Schema.Boolean,
+  }),
+)
+
+// priceHistory
+priceHistory: defineTable(
+  Schema.Struct({
+    dealId: Id.Id("deals"),
+    price: Schema.Number,
+    at: Schema.Number,
+  }),
+).index("by_dealId", ["dealId"])
+
+// crawlJobs
+crawlJobs: defineTable(
+  Schema.Struct({
+    storeId: Id.Id("stores"),
+    enqueuedAt: Schema.Number,
+    startedAt: Schema.optional(Schema.Number),
+    finishedAt: Schema.optional(Schema.Number),
+    status: Schema.Literal("queued", "running", "done", "failed"),
+    resultCount: Schema.optional(Schema.Number),
+    blockedByRobots: Schema.optional(Schema.Boolean),
+    blockedRule: Schema.optional(Schema.String),
+    errorDetails: Schema.optional(Schema.String),
+    attempt: Schema.Number,
+  }),
+).index("by_storeId", ["storeId"])
+```
 
 ---
 
-## 📦 Firecrawl Schema Example
+## Tech Stack
+
+- **Frontend:** TanStack Start (React 19, SSR)
+- **Backend:** Convex (serverless DB + functions) via [Confect](https://github.com/rjdellecese/confect)
+- **Schema/Validation:** Effect Schema (used by Confect for DB schemas and function validators)
+- **Crawling:** Firecrawl
+- **Auth:** Clerk (admin only)
+- **Hosting:** Netlify
+
+### Confect
+
+[Confect](https://rjdellecese.gitbook.io/confect) integrates Effect with Convex:
+
+- Define Convex schemas using Effect schemas
+- Automatic encode/decode when reading/writing to DB
+- Effect-ified Convex APIs (Promises → Effects, `A | null` → `Option<A>`)
+
+### Firecrawl Schema Example
 
 ```json
 {
@@ -186,36 +178,16 @@ key = hash(canonicalUrl + title)
 }
 ```
 
----
+### Deployment
 
-## 🧠 UX Notes
-
-- Disabled “Run Now” button shows time remaining tooltip
-- Deal image fallback: neutral placeholder
-- Copy error button on crawl failures
-- Bulk-delete sources **not needed** (hackathon)
-
----
-
-## ⚙️ Deployment
-
-- **Netlify** build + deploy
+- Netlify build + deploy
 - Convex project + environment variables
 - Clerk project configured in dashboard
-
-No seeding — **sources are admin-added only**.
-
----
-
-## 📄 Legal / ToS
-
-- **Always respect robots.txt**
-- Exclude Amazon entirely (MVP)
-- No scraping sites without permission
+- No seeding — sources are admin-added only
 
 ---
 
-## 🧹 What we do _not_ build
+## Out of Scope
 
 - Public source submission
 - Affiliate links
@@ -224,17 +196,24 @@ No seeding — **sources are admin-added only**.
 - Data cleanup cron
 - Multi-role permissions
 - Full mobile polish (just responsive enough)
-
-This is a **hackathon build** — ship fast.
+- Bulk-delete sources
 
 ---
 
-## ✅ MVP Complete When
+## UX Notes
+
+- Disabled "Run Now" button shows time remaining tooltip
+- Deal image fallback: neutral placeholder
+- Copy error button on crawl failures
+
+---
+
+## Complete When
 
 - [ ] Public deals feed with filtering
 - [ ] Admin can add/edit sources
 - [ ] Robots check on save
-- [ ] Convex cron + actions working
+- [ ] Cron + actions working
 - [ ] Deals + price history persist
 - [ ] Manual run w/ cooldown & toast
 - [ ] Respect robots.txt always
