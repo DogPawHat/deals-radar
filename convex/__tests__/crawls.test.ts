@@ -4,13 +4,7 @@ import schema from "../schema";
 import { api, internal } from "../_generated/api";
 
 const modules = import.meta.glob([
-  "../stores.ts",
-  "../deals.ts",
-  "../crawls.ts",
-  "../schema.ts",
-  "../confect.ts",
-  "../eSchemas.ts",
-  "../firecrawlNodeActions.ts",
+  "../**/*.ts",
   "../_generated/**/*",
   "!../index.ts",
   "!../convex.config.ts",
