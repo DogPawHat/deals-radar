@@ -155,6 +155,24 @@ class GetAgentDataArgs extends Schema.Struct({
   jobId: Schema.String,
 }) {}
 
+export {
+  FirecrawlOperationsContext,
+  FirecrawlClientErrorInit,
+  FirecrawlApiErrorAgentStatus,
+  FirecrawlApiErrorStartAgent,
+};
+
+export const FirecrawlTestLayer = Layer.succeed(FirecrawlOperationsContext, {
+  getAgentStatus: (_jobId: string) =>
+    Effect.succeed(
+      AgentStateCompleted.make({
+        data: [],
+        expiresAt: new Date(Date.now() + 86400000).toISOString(),
+      }),
+    ),
+  startAgent: (_urls: readonly string[]) => Effect.succeed(new AgentJob({ jobId: "test-job-id" })),
+});
+
 export const startAgent = internalAction({
   args: StartAgentArgs,
   returns: StartAgentResult,
