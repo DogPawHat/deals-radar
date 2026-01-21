@@ -139,12 +139,13 @@ class BeginManualCrawlArgs extends Schema.Class<BeginManualCrawlArgs>("BeginManu
   storeId: Id.Id("stores"),
 }) {}
 
-export class CrawlInProgressError extends Schema.TaggedError<CrawlInProgressError>(
+export class CrawlInProgressError extends Schema.TaggedError<CrawlInProgressError>()(
   "CrawlInProgressError",
-)("CrawlInProgressError", {
-  message: Schema.String,
-  storeId: Id.Id("stores"),
-}) {}
+  {
+    message: Schema.String,
+    storeId: Id.Id("stores"),
+  },
+) {}
 
 export const beginManualCrawl = mutation({
   args: BeginManualCrawlArgs,

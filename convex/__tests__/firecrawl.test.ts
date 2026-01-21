@@ -1,4 +1,4 @@
-import { describe, it, expect, layer } from "@effect/vitest";
+import { describe, expect, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import {
   AgentStateCompleted,
