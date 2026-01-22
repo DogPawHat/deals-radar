@@ -72,9 +72,9 @@ export const deals = defineTable(
 T3. Confect/Effect helpers
 
 - description: Centralize Effect helpers so all Convex actions/queries use consistent error handling and config access. This reduces copy/paste errors and keeps Convex code aligned with Effect conventions.
-- completion: [ ]
-- locations: `convex/confect.ts`, `convex/lib/effect.ts`, `convex/env.ts`
-- tests: Effect roundtrip for schema encode/decode
+- completion: [X]
+- locations: `convex/lib/effect.ts`, `convex/lib/__tests__/effect.test.ts`
+- tests: Effect roundtrip for schema decode, error tagging
 - impl: create Effect helpers for decode, config, and error tagging
 - deps: T2
 
