@@ -50,7 +50,6 @@ A website that shows the latest deals from a set of websites.
 - Fetch robots.txt on source save
 - Parse and store allow/disallow rules
 - Show rules in Admin only
-- Toast notification if manual run is blocked
 
 ### Filtering & Display
 
@@ -456,19 +455,6 @@ Utilitarian, bold, unpretentious. Embrace the raw aesthetic of warehouse stores 
 
 - Inline error banner: red background (#FFE5E5), black border, black text
 - [RETRY] button in uppercase with black background
-- Toast for transient errors (network failures, etc.)
-
-### Toasts & Notifications
-
-- Position: bottom-right
-- Auto-dismiss: 5 seconds (errors persist until dismissed)
-- Style: thick black border, no rounded corners, bold uppercase text
-- Types: success (green left stripe), error (red left stripe), info (black left stripe), warning (yellow left stripe)
-- Examples:
-  - "SOURCE SAVED"
-  - "CRAWL STARTED"
-  - "BLOCKED BY ROBOTS.TXT"
-  - "CRAWL FAILED: CONNECTION TIMEOUT"
 
 ### Responsive Breakpoints
 
@@ -486,16 +472,3 @@ Utilitarian, bold, unpretentious. Embrace the raw aesthetic of warehouse stores 
 - Semantic heading hierarchy (h1 → h2 → h3)
 - Alt text for deal images
 - ARIA labels on icon-only buttons
-
----
-
-## Complete When
-
-- [ ] Public deals feed with filtering
-- [ ] Admin can add/edit sources
-- [ ] Robots check on save
-- [ ] Cron + actions working
-- [ ] Deals + price history persist
-- [ ] Manual run w/ cooldown & toast
-- [ ] Respect robots.txt always
-- [ ] Placeholder images
