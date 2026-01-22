@@ -14,7 +14,7 @@ Goal: implement entire spec using TanStack Start + Convex + Confect + Effect. Te
 T1. Repo baseline + tooling
 
 - description: Establish a reliable local workflow so agents can run tests and linting consistently across tasks. This task also sets the project-wide environment variable contract so later tasks can rely on validated config.
-- completion: [ ]
+- completion: [X]
 - locations: `package.json`, `docs/ENV.md`, `.env.example`, `src/env.ts` (t3 env), `convex/env.ts` (Effect Config helper)
 - tests: smoke tests for `pnpm test`, `pnpm lint`, `pnpm typecheck`; env var presence check
 - impl: add missing scripts/configs, document commands, create `.env.example` and env var doc block
