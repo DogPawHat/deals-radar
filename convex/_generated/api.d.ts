@@ -17,7 +17,11 @@ import type * as index from "../index.js";
 import type * as lib_dedup from "../lib/dedup.js";
 import type * as stores from "../stores.js";
 
-import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
 
 declare const fullApi: ApiFromModules<{
   confect: typeof confect;
@@ -38,7 +42,10 @@ declare const fullApi: ApiFromModules<{
  * const myFunctionReference = api.myModule.myFunction;
  * ```
  */
-export declare const api: FilterApi<typeof fullApi, FunctionReference<any, "public">>;
+export declare const api: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "public">
+>;
 
 /**
  * A utility for referencing Convex functions in your app's internal API.
@@ -48,7 +55,10 @@ export declare const api: FilterApi<typeof fullApi, FunctionReference<any, "publ
  * const myFunctionReference = internal.myModule.myFunction;
  * ```
  */
-export declare const internal: FilterApi<typeof fullApi, FunctionReference<any, "internal">>;
+export declare const internal: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "internal">
+>;
 
 export declare const components: {
   workflow: {
@@ -169,7 +179,9 @@ export declare const components: {
         {
           generationNumber: number;
           steps: Array<{
-            retry?: boolean | { base: number; initialBackoffMs: number; maxAttempts: number };
+            retry?:
+              | boolean
+              | { base: number; initialBackoffMs: number; maxAttempts: number };
             schedulerOptions?: { runAt?: number } | { runAfter?: number };
             step:
               | {
@@ -285,8 +297,18 @@ export declare const components: {
       >;
     };
     workflow: {
-      cancel: FunctionReference<"mutation", "internal", { workflowId: string }, null>;
-      cleanup: FunctionReference<"mutation", "internal", { workflowId: string }, boolean>;
+      cancel: FunctionReference<
+        "mutation",
+        "internal",
+        { workflowId: string },
+        null
+      >;
+      cleanup: FunctionReference<
+        "mutation",
+        "internal",
+        { workflowId: string },
+        boolean
+      >;
       complete: FunctionReference<
         "mutation",
         "internal",
