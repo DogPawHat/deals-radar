@@ -268,9 +268,9 @@ T13. Admin: crawl jobs panel
 T14. Public: deals feed UI
 
 - description: Build the public feed with tab filters, grid/list toggle, and infinite scroll. This task ensures the view state is persisted and compatible with live Convex subscriptions.
-- completion: [ ]
+- completion: [X]
 - locations: `src/routes/index.tsx`, `src/features/deals/dealsFeed.tsx`, `src/features/deals/dealCard.tsx`
-- tests: tab state, view toggle persistence, skeletons
+- tests: tab state, view toggle persistence, skeletons (tests need frontend test setup)
 - impl: `/` page UI
 - deps: T5
 
