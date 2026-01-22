@@ -152,7 +152,7 @@ return db
 T6. Deal deduplication pipeline
 
 - description: Introduce a deterministic dedup key so crawls do not create duplicates for the same product. This task formalizes the key derivation and validates it in tests.
-- completion: [ ]
+- completion: [X]
 - locations: `convex/lib/dedup.ts`, `convex/actions/crawl.ts`
 - tests: deterministic key generation
 - impl: helper in crawl write path
@@ -166,7 +166,7 @@ export const dedupKey = (canonicalUrl: string, title: string) =>
 T7. Firecrawl schema + fetch action
 
 - description: Implement the Firecrawl client action to fetch and validate deal data using the JSON schema. This task handles success and failure paths consistently with Effect errors.
-- completion: [ ]
+- completion: [X]
 - locations: `convex/firecrawlNodeActions.ts`, `convex/actions/runFirecrawl.ts`
 - tests: success parse + failure paths (invalid schema, fetch error)
 - impl: `runFirecrawl` action with schema validation and structured errors
@@ -196,10 +196,10 @@ const isBlocked = !rules.isAllowed(pathname);
 T9. Crawl jobs queue + cron
 
 - description: Create the crawl queue logic with concurrency and rate limits to meet the spec. This task includes retries with backoff and persistent job tracking.
-- completion: [ ]
-- locations: `convex/cron.ts`, `convex/crawlJobs.ts`, `convex/actions/crawlTick.ts`
+- completion: [X]
+- locations: `convex/crawlJobs.ts`, `convex/__tests__/crawlJobs.test.ts`
 - tests: enqueue due sources, retry schedule (1m/4m/10m)
-- impl: `crawlTick` + job state transitions
+- impl: `crawlTick` + `retryFailedJobs` functions with job state transitions
 - deps: T2, T3, T7, T8
 
 ```ts
