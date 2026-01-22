@@ -88,7 +88,7 @@ export const decode =
 T4. Auth guard (admin) via Clerk + Convex auth checks
 
 - description: Add Clerk to TanStack Start for UI auth and integrate Clerk JWTs with Convex for server-side auth enforcement. This task ensures the admin area is protected both at the route level and in all Convex admin functions.
-- completion: [ ]
+- completion: [X]
 - locations: `src/start.ts`, `src/routes/__root.tsx`, `src/routes/admin/_layout.tsx`, `convex/auth.config.ts`, `convex/admin/*.ts`
 - tests: unauthenticated access to `/admin/*` redirects to `/sign-in`; Convex admin mutations reject when no user
 - impl: add `@clerk/tanstack-react-start`, `clerkMiddleware()` in `src/start.ts`, wrap root in `<ClerkProvider>`, server `auth()` check in `beforeLoad`, add `getAuthUserId` checks in Convex admin functions, configure Clerk as Convex auth provider

@@ -2,7 +2,8 @@ import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConvexQueryClient } from "@convex-dev/react-query";
-import { ConvexProvider } from "convex/react";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { useAuth } from "@clerk/tanstack-react-start";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
@@ -31,7 +32,9 @@ export function getRouter() {
     scrollRestoration: true,
     Wrap: (props: { children: React.ReactNode }) => (
       <QueryClientProvider client={queryClient}>
-        <ConvexProvider client={convexQueryClient.convexClient}>{props.children}</ConvexProvider>
+        <ConvexProviderWithClerk client={convexQueryClient.convexClient} useAuth={useAuth}>
+          {props.children}
+        </ConvexProviderWithClerk>
       </QueryClientProvider>
     ),
   });
