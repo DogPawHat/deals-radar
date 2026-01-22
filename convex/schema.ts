@@ -12,10 +12,13 @@ export const deals = defineTable(
     price: Schema.Number,
     currency: Schema.String,
     msrp: Schema.optional(Schema.Number),
+    percentOff: Schema.Number,
   }),
 )
   .index("by_storeId", ["storeId"])
-  .index("by_dedupeKey_for_store", ["dedupKey", "storeId"]);
+  .index("by_dedupeKey_for_store", ["dedupKey", "storeId"])
+  .index("by_percentOff", ["percentOff"])
+  .index("by_price", ["price"]);
 
 export const stores = defineTable(
   Schema.Struct({

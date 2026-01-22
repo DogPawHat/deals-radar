@@ -15,6 +15,7 @@ import type * as eSchemas from "../eSchemas.js";
 import type * as firecrawlNodeActions from "../firecrawlNodeActions.js";
 import type * as index from "../index.js";
 import type * as lib_dedup from "../lib/dedup.js";
+import type * as publicDeals from "../publicDeals.js";
 import type * as stores from "../stores.js";
 
 import type {
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   firecrawlNodeActions: typeof firecrawlNodeActions;
   index: typeof index;
   "lib/dedup": typeof lib_dedup;
+  publicDeals: typeof publicDeals;
   stores: typeof stores;
 }>;
 

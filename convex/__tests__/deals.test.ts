@@ -51,6 +51,7 @@ describe("deals", () => {
           dedupKey: "key1",
           price: 10,
           currency: "USD",
+          percentOff: 10,
         });
         await ctx.db.insert("deals", {
           storeId: id1,
@@ -60,6 +61,7 @@ describe("deals", () => {
           dedupKey: "key2",
           price: 20,
           currency: "USD",
+          percentOff: 20,
         });
 
         await ctx.db.insert("deals", {
@@ -70,6 +72,7 @@ describe("deals", () => {
           dedupKey: "key3",
           price: 30,
           currency: "USD",
+          percentOff: 30,
         });
 
         return { storeId1: id1, storeId2: id2 };
@@ -107,6 +110,7 @@ describe("deals", () => {
           currency: "USD",
           image: "https://test.com/image.jpg",
           msrp: 149.99,
+          percentOff: 33,
         });
 
         return id;

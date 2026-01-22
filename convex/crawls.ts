@@ -89,6 +89,7 @@ class UpdateDealsForStoreArgs extends Schema.Struct({
       image: Schema.optional(Schema.String),
       price: Schema.Number,
       currency: Schema.String,
+      msrp: Schema.optional(Schema.Number),
     }),
   ),
 }) {}
@@ -118,6 +119,7 @@ export const updateDealsForStore = internalMutation({
                 storeId,
                 canonicalUrl: dedupKeyResult.canonicalUrl,
                 dedupKey: dedupKeyResult.dedupKey,
+                percentOff: deal.msrp ? Math.round((1 - deal.price / deal.msrp) * 100) : 0,
               }),
             onSome: (existingDeal) =>
               ctx.db.patch(existingDeal._id, {
@@ -125,6 +127,7 @@ export const updateDealsForStore = internalMutation({
                 storeId,
                 canonicalUrl: dedupKeyResult.canonicalUrl,
                 dedupKey: dedupKeyResult.dedupKey,
+                percentOff: deal.msrp ? Math.round((1 - deal.price / deal.msrp) * 100) : 0,
               }),
           });
         }),

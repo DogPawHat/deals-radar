@@ -136,8 +136,8 @@ export default {
 T5. Public data queries
 
 - description: Build server queries for each public tab and filtering rule so the UI can subscribe live. This task defines pagination behavior that will be reused by the feed and list views.
-- completion: [ ]
-- locations: `convex/deals.ts`, `convex/queries/deals.ts`
+- completion: [X]
+- locations: `convex/publicDeals.ts`, `convex/__tests__/publicDeals.test.ts`
 - tests: each tab ordering and minimum discount filter
 - impl: Convex query functions + cursor pagination
 - deps: T2, T3
