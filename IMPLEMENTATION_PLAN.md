@@ -227,8 +227,9 @@ await db.insert("priceHistory", {
 T11. Admin: sources list + actions
 
 - description: Build the admin sources list UI with status indicators and action buttons. This task wires the list to Convex queries and provides the Run Now cooldown.
-- completion: [ ]
+- completion: [~]
 - locations: `src/routes/admin/sources.tsx`, `src/features/admin/sourcesList.tsx`, `convex/admin/sources.ts`
+- notes: Backend code written but blocked by @rjdallecese/confect package installation issue. Frontend components created with proper Convex integration patterns using useConvexQuery/useConvexMutation.
 - tests: status badges, run now disabled during cooldown
 - impl: list view + queries + mutations
 - deps: T4, T5, T8, T9
