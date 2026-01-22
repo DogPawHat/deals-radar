@@ -26,6 +26,7 @@ export const stores = defineTable(
     url: Schema.String,
     lastCrawlAt: Schema.optional(Schema.Number),
     isCrawling: Schema.Boolean,
+    robotsRules: Schema.optional(Schema.String),
   }),
 );
 

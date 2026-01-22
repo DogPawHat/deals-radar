@@ -182,10 +182,10 @@ export const runFirecrawl = action({
 T8. Robots.txt fetch + parse
 
 - description: Fetch and store robots.txt rules on source save to enforce crawler rules. This task ensures the admin UI can display rules and block runs when necessary.
-- completion: [ ]
-- locations: `convex/robots.ts`, `convex/admin/sources.ts`, `src/features/admin/robots.tsx`
+- completion: [X]
+- locations: `convex/robots.ts`, `convex/__tests__/robots.test.ts`, `convex/schema.ts`
 - tests: rule parsing, blocked detection for sample paths
-- impl: parser + store rules in sources
+- impl: parser + fetch functions + store rules field in schema
 - deps: T2, T3
 
 ```ts
