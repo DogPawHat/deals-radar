@@ -47,10 +47,10 @@ FIRECRAWL_API_KEY=
 T2. Convex schema + types
 
 - description: Implement the database schema exactly as specified so all server code can share a stable contract. This ensures indexes exist for queries and deduplication to work without costly scans.
-- completion: [ ]
-- locations: `convex/schema.ts`, `convex/eSchemas.ts` (Effect schemas if missing)
-- tests: schema validation snapshots for each table
-- impl: update `convex/schema.ts` with spec fields and indexes
+- completion: [X]
+- locations: `convex/schema.ts`, `convex/__tests__/schema.test.ts`
+- tests: schema validation tests for each table and their indexes
+- impl: update `convex/schema.ts` with spec fields, indexes, and export table definitions
 - deps: T1
 
 ```ts
