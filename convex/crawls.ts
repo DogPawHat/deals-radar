@@ -90,6 +90,7 @@ class UpdateDealsForStoreArgs extends Schema.Struct({
       price: Schema.Number,
       currency: Schema.String,
       msrp: Schema.optional(Schema.Number),
+      percentOff: Schema.optional(Schema.Number),
     }),
   ),
 }) {}
@@ -99,11 +100,15 @@ export const updateDealsForStore = internalMutation({
   returns: GenericSucessType,
   handler: Effect.fn("updateDealsForStore")(function* ({ storeId, deals }) {
     const ctx = yield* ConfectMutationCtx;
+    const now = Date.now();
 
     yield* Effect.all(
       deals.map((deal) =>
         Effect.gen(function* () {
           const dedupKeyResult = yield* buildDedupKey(deal.url, deal.title);
+          const percentOff = deal.msrp
+            ? Math.round((1 - deal.price / deal.msrp) * 100)
+            : (deal.percentOff ?? 0);
 
           const existingDealOption = yield* ctx.db
             .query("deals")
@@ -114,20 +119,36 @@ export const updateDealsForStore = internalMutation({
 
           yield* Option.match(existingDealOption, {
             onNone: () =>
-              ctx.db.insert("deals", {
-                ...deal,
-                storeId,
-                canonicalUrl: dedupKeyResult.canonicalUrl,
-                dedupKey: dedupKeyResult.dedupKey,
-                percentOff: deal.msrp ? Math.round((1 - deal.price / deal.msrp) * 100) : 0,
+              Effect.gen(function* () {
+                const newDealId = yield* ctx.db.insert("deals", {
+                  ...deal,
+                  storeId,
+                  canonicalUrl: dedupKeyResult.canonicalUrl,
+                  dedupKey: dedupKeyResult.dedupKey,
+                  percentOff,
+                });
+                yield* ctx.db.insert("priceHistory", {
+                  dealId: newDealId,
+                  price: deal.price,
+                  at: now,
+                });
               }),
             onSome: (existingDeal) =>
-              ctx.db.patch(existingDeal._id, {
-                ...deal,
-                storeId,
-                canonicalUrl: dedupKeyResult.canonicalUrl,
-                dedupKey: dedupKeyResult.dedupKey,
-                percentOff: deal.msrp ? Math.round((1 - deal.price / deal.msrp) * 100) : 0,
+              Effect.gen(function* () {
+                yield* ctx.db.patch(existingDeal._id, {
+                  ...deal,
+                  storeId,
+                  canonicalUrl: dedupKeyResult.canonicalUrl,
+                  dedupKey: dedupKeyResult.dedupKey,
+                  percentOff,
+                });
+                if (existingDeal.price !== deal.price) {
+                  yield* ctx.db.insert("priceHistory", {
+                    dealId: existingDeal._id,
+                    price: deal.price,
+                    at: now,
+                  });
+                }
               }),
           });
         }),

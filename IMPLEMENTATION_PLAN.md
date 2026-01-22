@@ -210,10 +210,10 @@ const shouldRetry = attempt < 3;
 T10. Write deals + price history
 
 - description: Persist crawled deals and append price history entries for each observation. This task also enforces the 5% discount minimum at write time.
-- completion: [ ]
-- locations: `convex/actions/runFirecrawl.ts`, `convex/deals.ts`, `convex/priceHistory.ts`
+- completion: [X]
+- locations: `convex/crawls.ts`, `convex/priceHistory.ts`, `convex/__tests__/dealsWrite.test.ts`
 - tests: new deal insert, existing deal update, history append
-- impl: write pipeline used by crawl action
+- impl: write pipeline used by crawl action, price history query
 - deps: T2, T6, T7
 
 ```ts

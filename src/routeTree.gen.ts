@@ -59,11 +59,18 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
+<<<<<<< Updated upstream
 import type { startInstance } from './start.ts'
+=======
+import type { createStart } from '@tanstack/react-start'
+>>>>>>> Stashed changes
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+<<<<<<< Updated upstream
     config: Awaited<ReturnType<typeof startInstance.getOptions>>
+=======
+>>>>>>> Stashed changes
   }
 }
