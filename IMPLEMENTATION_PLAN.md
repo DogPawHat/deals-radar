@@ -311,24 +311,7 @@ T16. Shared UI system (Brutalist)
 }
 ```
 
-T17. Toasts + notifications
-
-- description: Provide a toast system that matches the style guide and supports success/error/info/warning variants. This task also integrates toasts into crawl and save flows.
-- completion: [ ]
-- locations: `src/components/ui/toast.tsx`, `src/lib/toastStore.ts`, `src/features/admin/*`
-- tests: success/error/info/warn styles and timeouts
-- impl: toast store + UI component + usage in flows
-- deps: T11, T14, T16
-
-```ts
-toast.show({
-  variant: "error",
-  title: "CRAWL FAILED",
-  timeoutMs: 5000,
-});
-```
-
-T18. Loading/empty/error states
+T17. Loading/empty/error states
 
 - description: Implement skeletons, empty states, and error banners across public and admin screens. This ensures users always have a clear, branded state when data is missing or loading.
 - completion: [ ]
@@ -343,7 +326,7 @@ T18. Loading/empty/error states
 }
 ```
 
-T19. Accessibility pass
+T18. Accessibility pass
 
 - description: Verify focus styles, aria labels, and headings across the UI. This task ensures the interface is keyboard accessible and meets the spec's a11y requirements.
 - completion: [ ]
@@ -359,7 +342,7 @@ T19. Accessibility pass
 }
 ```
 
-T20. End-to-end verification
+T19. End-to-end verification
 
 - description: Build an e2e harness that runs through crawl -> feed -> detail with mocked Firecrawl and Convex. This provides a final integration check for the entire data path.
 - completion: [ ]
