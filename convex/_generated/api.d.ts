@@ -8,14 +8,20 @@
  * @module
  */
 
+import type * as admin_sources from "../admin/sources.js";
 import type * as confect from "../confect.js";
+import type * as crawlJobs from "../crawlJobs.js";
 import type * as crawls from "../crawls.js";
 import type * as deals from "../deals.js";
 import type * as eSchemas from "../eSchemas.js";
+import type * as env from "../env.js";
 import type * as firecrawlNodeActions from "../firecrawlNodeActions.js";
 import type * as index from "../index.js";
 import type * as lib_dedup from "../lib/dedup.js";
+import type * as lib_effect from "../lib/effect.js";
+import type * as priceHistory from "../priceHistory.js";
 import type * as publicDeals from "../publicDeals.js";
+import type * as robots from "../robots.js";
 import type * as stores from "../stores.js";
 
 import type {
@@ -25,14 +31,20 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "admin/sources": typeof admin_sources;
   confect: typeof confect;
+  crawlJobs: typeof crawlJobs;
   crawls: typeof crawls;
   deals: typeof deals;
   eSchemas: typeof eSchemas;
+  env: typeof env;
   firecrawlNodeActions: typeof firecrawlNodeActions;
   index: typeof index;
   "lib/dedup": typeof lib_dedup;
+  "lib/effect": typeof lib_effect;
+  priceHistory: typeof priceHistory;
   publicDeals: typeof publicDeals;
+  robots: typeof robots;
   stores: typeof stores;
 }>;
 
@@ -411,6 +423,69 @@ export declare const components: {
             state?: any;
             workflowHandle: string;
           };
+        }
+      >;
+      list: FunctionReference<
+        "query",
+        "internal",
+        {
+          order: "asc" | "desc";
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+        },
+        {
+          continueCursor: string;
+          isDone: boolean;
+          page: Array<{
+            args: any;
+            context?: any;
+            name?: string;
+            runResult?:
+              | { kind: "success"; returnValue: any }
+              | { error: string; kind: "failed" }
+              | { kind: "canceled" };
+            workflowId: string;
+          }>;
+          pageStatus?: "SplitRecommended" | "SplitRequired" | null;
+          splitCursor?: string | null;
+        }
+      >;
+      listByName: FunctionReference<
+        "query",
+        "internal",
+        {
+          name: string;
+          order: "asc" | "desc";
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+        },
+        {
+          continueCursor: string;
+          isDone: boolean;
+          page: Array<{
+            args: any;
+            context?: any;
+            name?: string;
+            runResult?:
+              | { kind: "success"; returnValue: any }
+              | { error: string; kind: "failed" }
+              | { kind: "canceled" };
+            workflowId: string;
+          }>;
+          pageStatus?: "SplitRecommended" | "SplitRequired" | null;
+          splitCursor?: string | null;
         }
       >;
       listSteps: FunctionReference<

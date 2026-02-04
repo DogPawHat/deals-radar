@@ -1,12 +1,12 @@
 import { Effect, Schema, Option } from "effect";
-import { mutation, internalMutation, ConfectMutationCtx } from "./confect";
-import { Id } from "@rjdallecese/confect/server";
+import { mutation, ConfectMutationCtx } from "./confect";
+import type { GenericId } from "convex/values";
 
 const CRAWL_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const COOLDOWN_MS = 3 * 60 * 1000;
-const MAX_CONCURRENT_JOBS = 3;
-const MAX_JOBS_PER_MINUTE = 10;
 const RETRY_BACKOFF_MS = [60_000, 240_000, 600_000] as const;
+const MAX_JOBS_PER_MINUTE = 10;
+const MAX_CONCURRENT_JOBS = 10;
 
 class CrawlTickArgs extends Schema.Class<CrawlTickArgs>("CrawlTickArgs")({}) {}
 
@@ -30,12 +30,19 @@ export const crawlTick = mutation({
       (j) => j.status === "queued" || j.status === "running",
     );
 
+    const runningJobs = yield* db
+      .query("crawlJobs")
+      .filter((q) => q.eq(q.field("status"), "running"))
+      .collect();
+
     const stores = yield* db.query("stores").collect();
 
     let processed = 0;
-    let newlyEnqueued = 0;
+    let remainingRateLimit = Math.max(0, MAX_JOBS_PER_MINUTE - queuedOrRunning.length);
+    let remainingConcurrentSlots = Math.max(0, MAX_CONCURRENT_JOBS - runningJobs.length);
 
     for (const store of stores) {
+      if (remainingRateLimit <= 0 || remainingConcurrentSlots <= 0) break;
       const recentForStore = queuedOrRunning.filter((j) => j.storeId === store._id);
 
       if (store.isCrawling) continue;
@@ -69,16 +76,18 @@ export const crawlTick = mutation({
           status: "queued",
           attempt: 1,
         });
-        newlyEnqueued++;
         processed++;
+        remainingRateLimit--;
+        remainingConcurrentSlots--;
         continue;
       }
 
       const maxAttempt = maxAttemptJob.attempt;
       if (maxAttempt >= 3) continue;
 
-      const backoffMs = RETRY_BACKOFF_MS[maxAttempt - 1];
-      if (backoffMs === undefined) continue;
+      const baseBackoff = RETRY_BACKOFF_MS[maxAttempt - 1];
+      if (baseBackoff === undefined) continue;
+      const backoffMs = Math.max(COOLDOWN_MS, baseBackoff);
       const lastFailedAt =
         maxAttemptJob.finishedAt ?? maxAttemptJob.startedAt ?? maxAttemptJob.enqueuedAt;
       if (now - lastFailedAt < backoffMs) continue;
@@ -92,8 +101,9 @@ export const crawlTick = mutation({
         attempt: maxAttempt + 1,
       });
 
-      newlyEnqueued++;
       processed++;
+      remainingRateLimit--;
+      remainingConcurrentSlots--;
     }
 
     return { processed };
@@ -118,28 +128,31 @@ export const retryFailedJobs = mutation({
       .filter((q) => q.eq(q.field("status"), "failed"))
       .collect();
 
-    type StoreRetryInfo = { attempt: number; lastAttemptTime: number };
+    type StoreRetryInfo = {
+      storeId: GenericId<"stores">;
+      attempt: number;
+      lastAttemptTime: number;
+    };
     const storesToRetry = new Map<string, StoreRetryInfo>();
     for (const job of failedJobs) {
       const storeId = job.storeId;
       const lastAttemptTime = job.finishedAt ?? job.startedAt ?? job.enqueuedAt;
-
-      if (job.attempt >= 3) continue;
-
-      const backoffMs = RETRY_BACKOFF_MS[job.attempt - 1];
-      if (backoffMs === undefined) continue;
-      if (now - lastAttemptTime < backoffMs) continue;
-
       const storeIdStr = storeId.toString();
       const existing = storesToRetry.get(storeIdStr);
       if (!existing || job.attempt > existing.attempt) {
-        storesToRetry.set(storeIdStr, { attempt: job.attempt, lastAttemptTime });
+        storesToRetry.set(storeIdStr, { storeId, attempt: job.attempt, lastAttemptTime });
       }
     }
 
     let retriedCount = 0;
-    for (const [storeIdStr, info] of storesToRetry) {
-      const storeId: Id.Id<"stores"> = storeIdStr as Id.Id<"stores">;
+    for (const [, info] of storesToRetry) {
+      if (info.attempt >= 3) continue;
+
+      const backoffMs = RETRY_BACKOFF_MS[info.attempt - 1];
+      if (backoffMs === undefined) continue;
+      if (now - info.lastAttemptTime < backoffMs) continue;
+
+      const { storeId } = info;
       const storeOption = yield* db.get(storeId);
       if (Option.isNone(storeOption)) continue;
 

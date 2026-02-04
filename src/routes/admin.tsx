@@ -1,9 +1,13 @@
-import { Outlet, useLocation } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@clerk/tanstack-react-start";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export default function AdminLayout() {
+export const Route = createFileRoute("/admin")({
+  component: AdminLayout,
+});
+
+function AdminLayout() {
   const location = useLocation();
   const { isSignedIn, signOut } = useAuth();
 

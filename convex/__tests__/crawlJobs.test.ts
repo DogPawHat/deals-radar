@@ -1,7 +1,7 @@
 import { convexTest } from "convex-test";
 import { describe, it, expect } from "vitest";
 import schema from "../schema";
-import { api, internal } from "../_generated/api";
+import { api } from "../_generated/api";
 
 const modules = import.meta.glob([
   "../**/*.ts",
@@ -21,7 +21,7 @@ describe("crawlJobs", () => {
     it("enqueues crawl for store never crawled", async () => {
       const t = convexTest(schema, modules);
 
-      const storeId = await t.run(async (ctx) => {
+      await t.run(async (ctx) => {
         return await ctx.db.insert("stores", {
           name: "Test Store",
           url: "https://test.com",
@@ -44,7 +44,7 @@ describe("crawlJobs", () => {
       const t = convexTest(schema, modules);
 
       const oneHourAgo = Date.now() - 60 * 60 * 1000;
-      const storeId = await t.run(async (ctx) => {
+      await t.run(async (ctx) => {
         return await ctx.db.insert("stores", {
           name: "Test Store",
           url: "https://test.com",
@@ -92,8 +92,9 @@ describe("crawlJobs", () => {
       await t.run(async (ctx) => {
         const jobs = await ctx.db.query("crawlJobs").collect();
         for (let i = 0; i < 3; i++) {
-          if (jobs[i]) {
-            await ctx.db.patch(jobs[i]._id, { status: "running" });
+          const job = jobs[i];
+          if (job) {
+            await ctx.db.patch(job._id, { status: "running" });
           }
         }
       });

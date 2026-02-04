@@ -1,12 +1,9 @@
-import { Id } from "@rjdallecese/confect/server";
+import { Id } from "@rjdellecese/confect/server";
 import { query, mutation, ConfectQueryCtx, ConfectMutationCtx } from "../confect";
-import { Schema, Effect, Option } from "effect";
-import { confectSchema } from "../schema";
+import { Schema, Effect } from "effect";
 import { fetchAndParseRobotsTxt } from "../robots";
 
 class ListStoresArgs extends Schema.Class<ListStoresArgs>("ListStoresArgs")({}) {}
-
-const StoreFields = confectSchema.tableSchemas.stores.withoutSystemFields;
 
 const StoreWithStats = Schema.Struct({
   _id: Id.Id("stores"),

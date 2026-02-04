@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useConvexQuery, useConvexMutation } from "@convex-dev/react-query";
-import { api } from "convex/_generated/api";
-import { Id } from "convex/_generated/dataModel";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import { api } from "@convex/_generated/api.js";
+import { Id } from "@convex/_generated/dataModel.js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -161,18 +161,22 @@ function StoresSkeleton() {
 export function SourcesList() {
   const queryClient = useQueryClient();
 
-  const { data: stores, isLoading, error } = useConvexQuery(api.admin.sources.listStores, {});
+  const {
+    data: stores,
+    isPending,
+    error,
+  } = useQuery(convexQuery(api.admin.sources.listStores, {}));
 
   const runNow = useConvexMutation(api.admin.sources.runNow);
   const deleteStore = useConvexMutation(api.admin.sources.deleteStore);
 
   const handleRunNow = (storeId: Id<"stores">) => {
-    runNow({ storeId });
+    void runNow({ storeId });
   };
 
   const handleDelete = (storeId: Id<"stores">) => {
     if (confirm("Are you sure you want to delete this source?")) {
-      deleteStore({ storeId });
+      void deleteStore({ storeId });
     }
   };
 
@@ -194,7 +198,7 @@ export function SourcesList() {
     );
   }
 
-  if (isLoading) {
+  if (isPending) {
     return <StoresSkeleton />;
   }
 

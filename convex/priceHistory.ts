@@ -1,4 +1,5 @@
-import { query, ConfectQueryCtx, Id } from "./confect";
+import { Id } from "@rjdellecese/confect/server";
+import { query, ConfectQueryCtx } from "./confect";
 import { Schema, Effect } from "effect";
 
 class GetPriceHistoryArgs extends Schema.Class<GetPriceHistoryArgs>("GetPriceHistoryArgs")({

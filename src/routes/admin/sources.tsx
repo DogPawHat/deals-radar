@@ -1,6 +1,11 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { SourcesList } from "@/features/admin/sourcesList";
 
-export default function AdminSourcesPage() {
+export const Route = createFileRoute("/admin/sources")({
+  component: AdminSourcesPage,
+});
+
+function AdminSourcesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
