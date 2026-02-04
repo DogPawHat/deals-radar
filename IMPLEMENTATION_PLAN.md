@@ -227,9 +227,9 @@ await db.insert("priceHistory", {
 T11. Admin: sources list + actions
 
 - description: Build the admin sources list UI with status indicators and action buttons. This task wires the list to Convex queries and provides the Run Now cooldown.
-- completion: [~]
+- completion: [X]
 - locations: `src/routes/admin/sources.tsx`, `src/features/admin/sourcesList.tsx`, `convex/admin/sources.ts`
-- notes: Backend code written but blocked by @rjdallecese/confect package installation issue. Frontend components created with proper Convex integration patterns using useConvexQuery/useConvexMutation.
+- notes: Implemented list view, run-now cooldown handling, add/edit modal wiring, and delete action with Convex queries/mutations.
 - tests: status badges, run now disabled during cooldown
 - impl: list view + queries + mutations
 - deps: T4, T5, T8, T9
@@ -243,7 +243,7 @@ T11. Admin: sources list + actions
 T12. Admin: add/edit source modal
 
 - description: Implement add/edit flow with validation and robots preview on URL blur. This task keeps the form logic isolated from list rendering for easier testing.
-- completion: [ ]
+- completion: [X]
 - locations: `src/features/admin/sourceModal.tsx`, `src/features/admin/sourceForm.tsx`, `convex/admin/sources.ts`
 - tests: validation errors, robots rules render on blur
 - impl: modal form, save mutation
@@ -256,7 +256,7 @@ T12. Admin: add/edit source modal
 T13. Admin: crawl jobs panel
 
 - description: Add expandable crawl job history with error details and copy. This task ensures admins can diagnose failures quickly.
-- completion: [ ]
+- completion: [X]
 - locations: `src/features/admin/crawlJobsPanel.tsx`, `convex/admin/crawlJobs.ts`
 - tests: expand/collapse, copy error payload
 - impl: panel UI + query for recent jobs
@@ -282,7 +282,7 @@ const [view, setView] = useLocalStorage("dealView", "grid");
 T15. Public: deal detail page
 
 - description: Implement the deal detail page with hero image, pricing, and price history chart. This task also wires the external link to open in a new tab.
-- completion: [ ]
+- completion: [X]
 - locations: `src/routes/deals/$id.tsx`, `src/features/deals/priceHistoryChart.tsx`
 - tests: chart data mapping, link opens new tab
 - impl: `/deals/:id` page + chart component
@@ -297,7 +297,7 @@ T15. Public: deal detail page
 T16. Shared UI system (Brutalist)
 
 - description: Implement global styles and core components that follow the Supermarket Brutalist style. This task provides consistent visuals across admin and public routes.
-- completion: [ ]
+- completion: [X]
 - locations: `src/styles.css`, `src/components/ui/*`
 - tests: class snapshots for key components
 - impl: global CSS tokens, buttons, tabs, cards, banners
@@ -315,7 +315,7 @@ T16. Shared UI system (Brutalist)
 T17. Loading/empty/error states
 
 - description: Implement skeletons, empty states, and error banners across public and admin screens. This ensures users always have a clear, branded state when data is missing or loading.
-- completion: [ ]
+- completion: [X]
 - locations: `src/components/ui/emptyState.tsx`, `src/components/ui/skeleton.tsx`, `src/components/ui/errorBanner.tsx`
 - tests: empty state rendering, error banner visibility
 - impl: components wired into list/detail/admin pages

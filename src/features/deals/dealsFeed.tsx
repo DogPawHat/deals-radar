@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { convexQuery, useConvex } from "@convex-dev/react-query";
+import { api } from "@convex/_generated/api.js";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,16 +26,19 @@ interface Deal {
 }
 
 interface QueryResult {
-  deals: Deal[];
+  deals: readonly Deal[];
   cursor?: string;
 }
 
-const TAB_CONFIG: { value: Tab; label: string; queryFn: string }[] = [
-  { value: "newest", label: "NEWEST", queryFn: "getDealsNewest" },
-  { value: "biggestDrop", label: "BIGGEST DROP", queryFn: "getDealsBiggestDrop" },
-  { value: "price", label: "PRICE", queryFn: "getDealsByPrice" },
-  { value: "all", label: "ALL", queryFn: "getDealsAll" },
-];
+const PAGE_SIZE = 20;
+
+const TAB_CONFIG: { value: Tab; label: string; queryFn: typeof api.publicDeals.getDealsNewest }[] =
+  [
+    { value: "newest", label: "NEWEST", queryFn: api.publicDeals.getDealsNewest },
+    { value: "biggestDrop", label: "BIGGEST DROP", queryFn: api.publicDeals.getDealsBiggestDrop },
+    { value: "price", label: "PRICE", queryFn: api.publicDeals.getDealsByPrice },
+    { value: "all", label: "ALL", queryFn: api.publicDeals.getDealsAll },
+  ];
 
 function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
@@ -81,17 +86,27 @@ const SkeletonGrid = () => (
 export function DealsFeed() {
   const [activeTab, setActiveTab] = useState<Tab>("newest");
   const [view, setView] = useLocalStorage<"grid" | "list">("dealView", "grid");
+  const convex = useConvex();
 
   const currentQuery = TAB_CONFIG.find((t) => t.value === activeTab)!;
 
   const queryKey = useMemo(
-    () => ["publicDeals", currentQuery.queryFn] as const,
-    [currentQuery.queryFn]
+    () => convexQuery(currentQuery.queryFn, { limit: PAGE_SIZE }).queryKey,
+    [currentQuery.queryFn],
   );
 
-  const { data, isLoading, error } = useQuery({
-    queryKey,
-  });
+  const { data, isPending, error, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
+    useInfiniteQuery({
+      queryKey,
+      initialPageParam: undefined as string | undefined,
+      queryFn: ({ pageParam }) =>
+        convex.query(currentQuery.queryFn, {
+          limit: PAGE_SIZE,
+          cursor: pageParam ?? undefined,
+        }),
+      getNextPageParam: (lastPage: QueryResult) => lastPage.cursor ?? undefined,
+      staleTime: Infinity,
+    });
 
   const handleViewToggle = (newView: "grid" | "list") => {
     setView(newView);
@@ -101,14 +116,14 @@ export function DealsFeed() {
     return (
       <div className="bg-error-bg border-2 border-black p-4">
         <p className="font-bold text-black">Error loading deals</p>
-        <Button variant="default" size="sm" className="mt-2">
+        <Button variant="default" size="sm" className="mt-2" onClick={() => refetch()}>
           RETRY
         </Button>
       </div>
     );
   }
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-3 border-black pb-4">
@@ -129,14 +144,12 @@ export function DealsFeed() {
     );
   }
 
-  const dealsData = data as QueryResult | undefined;
+  const deals = data?.pages.flatMap((page) => page.deals) ?? [];
 
-  if (!dealsData || dealsData.deals.length === 0) {
+  if (deals.length === 0) {
     return (
       <div className="text-center py-16">
-        <h2 className="font-display font-bold text-4xl uppercase tracking-wide">
-          NO DEALS FOUND
-        </h2>
+        <h2 className="font-display font-bold text-4xl uppercase tracking-wide">NO DEALS FOUND</h2>
       </div>
     );
   }
@@ -153,7 +166,7 @@ export function DealsFeed() {
                 className={cn(
                   "px-6 py-2 font-display font-bold uppercase tracking-wide text-sm",
                   "data-[active]:bg-safety-yellow data-[active]:text-black data-[active]:border-b-3 data-[active]:border-black",
-                  "data-[active]:shadow-none hover:bg-muted"
+                  "data-[active]:shadow-none hover:bg-muted",
                 )}
               >
                 {tab.label}
@@ -186,18 +199,23 @@ export function DealsFeed() {
         className={cn(
           view === "grid"
             ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-            : "flex flex-col gap-4"
+            : "flex flex-col gap-4",
         )}
       >
-        {dealsData.deals.map((deal) => (
+        {deals.map((deal) => (
           <DealCard key={deal._id} deal={deal} view={view} />
         ))}
       </div>
 
-      {dealsData.deals.length > 0 && (
+      {deals.length > 0 && hasNextPage && (
         <div className="flex justify-center pt-8">
-          <Button variant="default" size="xl">
-            LOAD MORE
+          <Button
+            variant="default"
+            size="xl"
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? "LOADING..." : "LOAD MORE"}
             <ChevronDown className="ml-2 size-4" />
           </Button>
         </div>

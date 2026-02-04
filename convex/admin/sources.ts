@@ -5,6 +5,15 @@ import { fetchAndParseRobotsTxt } from "../robots";
 
 class ListStoresArgs extends Schema.Class<ListStoresArgs>("ListStoresArgs")({}) {}
 
+class PreviewRobotsArgs extends Schema.Class<PreviewRobotsArgs>("PreviewRobotsArgs")({
+  url: Schema.String,
+}) {}
+
+const PreviewRobotsResult = Schema.Struct({
+  rules: Schema.String,
+  error: Schema.optional(Schema.String),
+});
+
 const StoreWithStats = Schema.Struct({
   _id: Id.Id("stores"),
   name: Schema.String,
@@ -55,6 +64,37 @@ export const listStores = query({
     }
 
     return storesWithStats;
+  }),
+});
+
+export const previewRobots = query({
+  args: PreviewRobotsArgs,
+  returns: PreviewRobotsResult,
+  handler: Effect.fn("previewRobots")(function* ({ url }) {
+    const trimmedUrl = url.trim();
+
+    if (!trimmedUrl) {
+      return { rules: "", error: "URL is required" };
+    }
+
+    return yield* Effect.catchAll(
+      Effect.gen(function* () {
+        const result = yield* fetchAndParseRobotsTxt(trimmedUrl);
+        const lines = result.rules.map((rule) =>
+          rule.allow ? `Allow: ${rule.allow}` : `Disallow: ${rule.disallow}`,
+        );
+
+        return { rules: lines.join("\n") };
+      }),
+      (error) => {
+        const message =
+          typeof error === "object" && error && "message" in error
+            ? String(error.message)
+            : "Unable to fetch robots.txt";
+
+        return Effect.succeed({ rules: "", error: message });
+      },
+    );
   }),
 });
 
