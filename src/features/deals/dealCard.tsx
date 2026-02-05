@@ -24,9 +24,7 @@ function formatPrice(price: number, currency: string): string {
 
 export function DealCard({ deal, view = "grid" }: DealCardProps) {
   const currentPrice = formatPrice(deal.price, deal.currency);
-  const originalPrice = deal.msrp
-    ? formatPrice(deal.msrp, deal.currency)
-    : null;
+  const originalPrice = deal.msrp ? formatPrice(deal.msrp, deal.currency) : null;
 
   if (view === "list") {
     return (
@@ -34,11 +32,7 @@ export function DealCard({ deal, view = "grid" }: DealCardProps) {
         <Card className="group/card flex flex-row items-center p-4 gap-4 cursor-pointer">
           <div className="w-20 h-20 flex-shrink-0 bg-muted border border-black overflow-hidden">
             {deal.image ? (
-              <img
-                src={deal.image}
-                alt={deal.title}
-                className="w-full h-full object-cover"
-              />
+              <img src={deal.image} alt={deal.title} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-concrete-gray" />
             )}
@@ -47,18 +41,12 @@ export function DealCard({ deal, view = "grid" }: DealCardProps) {
             <h3 className="font-display font-bold text-lg leading-tight line-clamp-1 mb-1">
               {deal.title}
             </h3>
-            <p className="text-concrete-gray text-sm mb-2">
-              {deal.store?.name ?? "Unknown Store"}
-            </p>
+            <p className="text-concrete-gray text-sm mb-2">{deal.store?.name ?? "Unknown Store"}</p>
           </CardContent>
           <div className="text-right flex-shrink-0">
-            <div className="font-display font-bold text-xl">
-              {currentPrice}
-            </div>
+            <div className="font-display font-bold text-xl">{currentPrice}</div>
             {originalPrice && (
-              <div className="text-concrete-gray text-sm line-through">
-                {originalPrice}
-              </div>
+              <div className="text-concrete-gray text-sm line-through">{originalPrice}</div>
             )}
             <div className="inline-block bg-signal-red text-white text-xs font-bold px-2 py-0.5 mt-1 rotate-[-5deg]">
               {deal.percentOff.toFixed(0)}% OFF
@@ -76,11 +64,7 @@ export function DealCard({ deal, view = "grid" }: DealCardProps) {
       <Card className="h-full cursor-pointer group/card">
         <div className="aspect-[240/160] w-full bg-muted border-b-2 border-black overflow-hidden relative">
           {deal.image ? (
-            <img
-              src={deal.image}
-              alt={deal.title}
-              className="w-full h-full object-cover"
-            />
+            <img src={deal.image} alt={deal.title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-concrete-gray" />
           )}
@@ -89,18 +73,12 @@ export function DealCard({ deal, view = "grid" }: DealCardProps) {
           <h3 className="font-display font-bold text-base leading-tight line-clamp-2">
             {deal.title}
           </h3>
-          <p className="text-concrete-gray text-sm">
-            {deal.store?.name ?? "Unknown Store"}
-          </p>
+          <p className="text-concrete-gray text-sm">{deal.store?.name ?? "Unknown Store"}</p>
           <div className="mt-auto pt-2">
             <div className="flex items-baseline gap-2">
-              <span className="font-display font-bold text-xl">
-                {currentPrice}
-              </span>
+              <span className="font-display font-bold text-xl">{currentPrice}</span>
               {originalPrice && (
-                <span className="text-concrete-gray text-sm line-through">
-                  {originalPrice}
-                </span>
+                <span className="text-concrete-gray text-sm line-through">{originalPrice}</span>
               )}
             </div>
             <div className="flex items-center gap-2 mt-1">

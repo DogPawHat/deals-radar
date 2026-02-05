@@ -1,21 +1,15 @@
 import { Effect, Schema, Context, Layer } from "effect";
 
-export class RobotsParseError extends Schema.TaggedError<RobotsParseError>()(
-  "RobotsParseError",
-  {
-    message: Schema.String,
-    error: Schema.Defect,
-  },
-) {}
+export class RobotsParseError extends Schema.TaggedError<RobotsParseError>()("RobotsParseError", {
+  message: Schema.String,
+  error: Schema.Defect,
+}) {}
 
-export class RobotsFetchError extends Schema.TaggedError<RobotsFetchError>()(
-  "RobotsFetchError",
-  {
-    message: Schema.String,
-    url: Schema.String,
-    error: Schema.Defect,
-  },
-) {}
+export class RobotsFetchError extends Schema.TaggedError<RobotsFetchError>()("RobotsFetchError", {
+  message: Schema.String,
+  url: Schema.String,
+  error: Schema.Defect,
+}) {}
 
 export interface RobotsRule {
   allow: string;
@@ -139,7 +133,10 @@ export const fetchRobotsTxt = (
 
 export const fetchAndParseRobotsTxt = (
   baseUrl: string,
-): Effect.Effect<{ rules: RobotsRule[]; isBlocked: (path: string) => boolean }, RobotsParseError | RobotsFetchError> =>
+): Effect.Effect<
+  { rules: RobotsRule[]; isBlocked: (path: string) => boolean },
+  RobotsParseError | RobotsFetchError
+> =>
   Effect.gen(function* () {
     const { content } = yield* fetchRobotsTxt(baseUrl);
 
@@ -154,9 +151,7 @@ export const fetchAndParseRobotsTxt = (
     return parsed;
   });
 
-export class RobotsService extends Context.Tag(
-  "deals-radar/convex/RobotsService",
-)<
+export class RobotsService extends Context.Tag("deals-radar/convex/RobotsService")<
   RobotsService,
   {
     readonly fetchAndParse: (
