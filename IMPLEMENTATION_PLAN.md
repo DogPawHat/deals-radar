@@ -129,12 +129,12 @@ Files: `src/components/ui/button.tsx`
 
 - Dependencies: T1, T2
 
-- [ ] Update `src/components/ui/card.tsx`:
+- [x] Update `src/components/ui/card.tsx`:
   - Base: `bg-card text-card-foreground border border-border` (1px border, not 2px)
   - Remove `hover:border-[3px] hover:border-black hover:bg-safety-yellow`
   - New hover: `hover:bg-secondary` (subtle background shift)
   - `rounded-sm` (uses new 2px radius token)
-- [ ] Update `CardTitle`: change `font-display` to `font-sans`
+- [x] Update `CardTitle`: change `font-display` to `font-sans`
 
 Files: `src/components/ui/card.tsx`
 

@@ -12,8 +12,8 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "bg-card text-card-foreground overflow-hidden rounded-none border-2 border-black py-6 text-sm transition-all data-[size=sm]:gap-4 data-[size=sm]:py-4 group/card flex flex-col",
-        "hover:border-[3px] hover:border-black hover:bg-safety-yellow focus-visible:border-black focus-visible:border-[3px] focus-visible:outline-none",
+        "bg-card text-card-foreground overflow-hidden rounded-sm border border-border py-6 text-sm transition-all data-[size=sm]:gap-4 data-[size=sm]:py-4 group/card flex flex-col",
+        "hover:bg-secondary focus-visible:outline-none",
         className,
       )}
       {...props}
@@ -39,7 +39,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-title"
       className={cn(
-        "text-base leading-normal font-bold font-display group-data-[size=sm]/card:text-sm",
+        "text-base leading-normal font-bold font-sans group-data-[size=sm]/card:text-sm",
         className,
       )}
       {...props}
