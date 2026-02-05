@@ -351,17 +351,18 @@ Files: `src/routes/admin.tsx`
 
 - Dependencies: T1, T2, T5, T8
 
-- [ ] Update `src/routes/admin/sources.tsx`:
+- [x] Update `src/routes/admin/sources.tsx`:
   - Heading: `font-sans font-bold` (not `font-display`), remove explicit uppercase if using CSS
-- [ ] Update `src/features/admin/sourcesList.tsx`:
+- [x] Update `src/features/admin/sourcesList.tsx`:
   - Remove all `bg-white`, `border-2 border-black` from cards
   - Use `bg-card border border-border rounded-sm` for source cards
   - Dropdown menu: remove `shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]` and `bg-white border-2 border-black`; use shadcn `DropdownMenu` component (or update inline styles to use tokens)
   - Error state: replace `bg-error-bg border-2 border-black` with `bg-red-loss-muted border-l-2 border-red-loss`
   - Status badges: Idle (`text-muted-foreground`), Crawling (`text-accent-amber`), Error (`text-red-loss`)
   - Skeleton: dark surface blocks, no borders
+- [x] Added `warning` variant to Badge component for Crawling/Running states with amber colors
 
-Files: `src/routes/admin/sources.tsx`, `src/features/admin/sourcesList.tsx`
+Files: `src/routes/admin/sources.tsx`, `src/features/admin/sourcesList.tsx`, `src/components/ui/badge.tsx`
 
 ---
 
@@ -369,9 +370,9 @@ Files: `src/routes/admin/sources.tsx`, `src/features/admin/sourcesList.tsx`
 
 - Dependencies: T1, T2, T5, T8
 
-- [ ] `sourceModal.tsx`: AlertDialog will pick up dark tokens from T8; verify max-w and layout
-- [ ] `sourceForm.tsx`: inputs inherit from shadcn Input (T8); verify labels use `text-muted-foreground`; robots preview textarea uses `font-mono` (already does)
-- [ ] `crawlJobsPanel.tsx`:
+- [x] `sourceModal.tsx`: AlertDialog will pick up dark tokens from T8; verify max-w and layout
+- [x] `sourceForm.tsx`: inputs inherit from shadcn Input (T8); verify labels use `text-muted-foreground`; robots preview textarea uses `font-mono` (already does)
+- [x] `crawlJobsPanel.tsx`:
   - Replace `border border-black bg-white` on job items with `bg-secondary border border-border rounded-sm`
   - Replace `bg-white` on Card with nothing (Card inherits `bg-card` from T6)
   - Status colors: success = `text-green-gain`, failed = `text-red-loss`
@@ -387,16 +388,17 @@ Files: `src/features/admin/sourceModal.tsx`, `src/features/admin/sourceForm.tsx`
 
 Grep the entire `src/` directory for any remaining:
 
-- [ ] `bg-white` — replace with `bg-card` or `bg-background`
-- [ ] `text-black` — replace with `text-foreground`
-- [ ] `border-black` — replace with `border-border` or `border-input`
-- [ ] `bg-black` — replace with `bg-foreground` or appropriate dark equivalent
-- [ ] `stroke-black` / `fill-black` — replace with token-based classes
-- [ ] `#000000` / `rgba(0,0,0` — replace with CSS variable references
-- [ ] `safety-yellow` — replace with `green-gain` or remove
-- [ ] `signal-red` — replace with `red-loss` or `green-gain` (discounts are gains)
-- [ ] `concrete-gray` — replace with `muted-foreground`
-- [ ] `font-display` — replace with `font-sans` (headings) or `font-mono` (data)
+- [x] `bg-white` — replace with `bg-card` or `bg-background`
+- [x] `text-black` — replace with `text-foreground`
+- [x] `border-black` — replace with `border-border` or `border-input`
+- [x] `bg-black` — replace with `bg-foreground` or appropriate dark equivalent
+- [x] `stroke-black` / `fill-black` — replace with token-based classes
+- [x] `#000000` / `rgba(0,0,0` — replace with CSS variable references
+- [x] `safety-yellow` — replace with `green-gain` or remove
+- [x] `signal-red` — replace with `red-loss` or `green-gain` (discounts are gains)
+- [x] `concrete-gray` — replace with `muted-foreground`
+- [x] `font-display` — replace with `font-sans` (headings) or `font-mono` (data)
+- [x] Replaced `bg-black/10` in alert-dialog.tsx with `bg-background/50`
 
 Files: all `src/**/*.tsx`, `src/styles.css`
 
@@ -406,8 +408,8 @@ Files: all `src/**/*.tsx`, `src/styles.css`
 
 - Dependencies: T1-T17
 
-- [ ] `pnpm typecheck` passes
-- [ ] `pnpm build` succeeds
+- [x] `pnpm typecheck` passes
+- [x] `pnpm build` succeeds
 - [ ] `pnpm dev` — visually verify:
   - Dark background everywhere
   - Green prices, red for errors only

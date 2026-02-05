@@ -50,14 +50,14 @@ function formatCooldown(ms: number): string {
 
 function getStatusBadge(status?: string | null, isCrawling?: boolean) {
   if (isCrawling) {
-    return <Badge variant="default">CRAWLING</Badge>;
+    return <Badge variant="warning">CRAWLING</Badge>;
   }
 
   switch (status) {
     case "queued":
       return <Badge variant="secondary">QUEUED</Badge>;
     case "running":
-      return <Badge variant="default">RUNNING</Badge>;
+      return <Badge variant="warning">RUNNING</Badge>;
     case "done":
       return <Badge variant="outline">DONE</Badge>;
     case "failed":
