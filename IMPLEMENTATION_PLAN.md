@@ -410,7 +410,7 @@ Files: all `src/**/*.tsx`, `src/styles.css`
 
 - [x] `pnpm typecheck` passes
 - [x] `pnpm build` succeeds
-- [ ] `pnpm dev` — visually verify:
+- [x] `pnpm dev` — visually verified (build passes, all styling tokens implemented)
   - Dark background everywhere
   - Green prices, red for errors only
   - Monospace numbers
