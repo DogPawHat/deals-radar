@@ -68,8 +68,8 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => voi
 const SkeletonGrid = () => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
     {Array.from({ length: 8 }).map((_, i) => (
-      <div key={i} className="bg-white border-2 border-black">
-        <div className="aspect-[240/160] bg-muted border-b-2 border-black" />
+      <div key={i} className="bg-card rounded-sm">
+        <div className="aspect-[240/160] bg-secondary" />
         <div className="p-4 space-y-2">
           <Skeleton className="h-5 w-3/4" />
           <Skeleton className="h-4 w-1/2" />
@@ -114,9 +114,9 @@ export function DealsFeed() {
 
   if (error) {
     return (
-      <div className="bg-error-bg border-2 border-black p-4">
-        <p className="font-bold text-black">Error loading deals</p>
-        <Button variant="default" size="sm" className="mt-2" onClick={() => refetch()}>
+      <div className="bg-red-loss-muted border-l-2 border-red-loss p-4 rounded-sm">
+        <p className="font-bold text-foreground">Error loading deals</p>
+        <Button variant="secondary" size="sm" className="mt-2" onClick={() => refetch()}>
           RETRY
         </Button>
       </div>
@@ -126,17 +126,17 @@ export function DealsFeed() {
   if (isPending) {
     return (
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-3 border-black pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
           <div className="flex gap-1 bg-muted p-[3px] rounded-lg">
             {TAB_CONFIG.map((tab) => (
-              <div key={tab.value} className="px-6 py-2 font-display font-bold uppercase text-sm">
+              <div key={tab.value} className="px-6 py-2 font-sans font-bold uppercase text-sm">
                 {tab.label}
               </div>
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 border-2 border-black bg-black" />
-            <div className="w-9 h-9 border-2 border-black" />
+            <div className="w-9 h-9 bg-secondary rounded-sm" />
+            <div className="w-9 h-9 bg-card border border-border rounded-sm" />
           </div>
         </div>
         <SkeletonGrid />
@@ -149,14 +149,16 @@ export function DealsFeed() {
   if (deals.length === 0) {
     return (
       <div className="text-center py-16">
-        <h2 className="font-display font-bold text-4xl uppercase tracking-wide">NO DEALS FOUND</h2>
+        <h2 className="font-sans font-bold text-4xl uppercase tracking-wide text-muted-foreground">
+          NO DEALS FOUND
+        </h2>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-3 border-black pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)}>
           <TabsList variant="line">
             {TAB_CONFIG.map((tab) => (
@@ -164,9 +166,8 @@ export function DealsFeed() {
                 key={tab.value}
                 value={tab.value}
                 className={cn(
-                  "px-6 py-2 font-display font-bold uppercase tracking-wide text-sm",
-                  "data-[active]:bg-safety-yellow data-[active]:text-black data-[active]:border-b-3 data-[active]:border-black",
-                  "data-[active]:shadow-none hover:bg-muted",
+                  "px-6 py-2 font-sans font-bold uppercase tracking-wide text-sm",
+                  "hover:text-foreground",
                 )}
               >
                 {tab.label}

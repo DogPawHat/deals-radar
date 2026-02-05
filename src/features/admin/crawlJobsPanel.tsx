@@ -75,7 +75,7 @@ function handleCopy(text: string) {
 
 export function CrawlJobsPanel({ jobs, isLoading }: CrawlJobsPanelProps) {
   return (
-    <Card size="sm" className="bg-white">
+    <Card size="sm">
       <CardHeader>
         <CardTitle>Recent Crawl Jobs</CardTitle>
       </CardHeader>
@@ -98,7 +98,10 @@ export function CrawlJobsPanel({ jobs, isLoading }: CrawlJobsPanelProps) {
             const errorCopy = getErrorCopy(job);
 
             return (
-              <div key={job._id} className="rounded-md border border-black bg-white p-3 text-sm">
+              <div
+                key={job._id}
+                className="rounded-md border border-border bg-secondary p-3 text-sm"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     {getStatusBadge(job.status)}

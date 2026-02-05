@@ -64,22 +64,22 @@ export function PriceHistoryChart({ history, currency }: PriceHistoryChartProps)
     .filter((tick): tick is PriceHistoryPoint => Boolean(tick));
 
   return (
-    <div className="border-2 border-black bg-white p-4">
-      <div className="flex items-center justify-between mb-4 border-b-2 border-black pb-3">
-        <h2 className="font-display font-bold text-xl uppercase tracking-wide">
+    <div className="bg-card border border-border rounded-sm p-4">
+      <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+        <h2 className="font-sans font-bold text-xl uppercase tracking-wide">
           Price History (30 days)
         </h2>
-        <span className="text-xs font-bold uppercase text-concrete-gray">30D</span>
+        <span className="text-xs font-bold uppercase text-muted-foreground">30D</span>
       </div>
 
-      <div className="relative h-48 border-2 border-black bg-white">
+      <div className="relative h-48 bg-background border border-border rounded-sm">
         <svg viewBox="0 0 104 100" className="absolute inset-0 h-full w-full" role="img">
           <line
             x1={chartLeft}
             y1={chartTop}
             x2={chartLeft}
             y2={chartBottom}
-            className="stroke-black"
+            className="stroke-border"
             strokeWidth={1.5}
           />
           <line
@@ -87,12 +87,12 @@ export function PriceHistoryChart({ history, currency }: PriceHistoryChartProps)
             y1={chartBottom}
             x2={chartRight}
             y2={chartBottom}
-            className="stroke-black"
+            className="stroke-border"
             strokeWidth={1.5}
           />
 
           {hasSeries && (
-            <path d={path} className="stroke-signal-red" strokeWidth={2.5} fill="none" />
+            <path d={path} className="stroke-green-gain" strokeWidth={2.5} fill="none" />
           )}
 
           {coordinates.map((point, index) => (
@@ -101,26 +101,28 @@ export function PriceHistoryChart({ history, currency }: PriceHistoryChartProps)
               cx={point.x}
               cy={point.y}
               r={2.5}
-              className="fill-black"
+              className="fill-green-gain"
             />
           ))}
         </svg>
 
         {points.length <= 1 && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <span className="font-display font-bold text-sm uppercase">TRACKING STARTED</span>
+            <span className="font-sans font-bold text-sm uppercase text-muted-foreground">
+              TRACKING STARTED
+            </span>
             {points.length === 0 && (
-              <span className="text-xs text-concrete-gray">No history yet</span>
+              <span className="text-xs text-muted-foreground">No history yet</span>
             )}
           </div>
         )}
 
         {points.length > 0 && (
           <>
-            <span className="absolute left-2 top-2 text-xs font-bold text-concrete-gray">
+            <span className="absolute left-2 top-2 text-xs font-bold text-muted-foreground font-mono">
               {formatPrice(maxPrice, currency)}
             </span>
-            <span className="absolute left-2 bottom-2 text-xs font-bold text-concrete-gray">
+            <span className="absolute left-2 bottom-2 text-xs font-bold text-muted-foreground font-mono">
               {formatPrice(minPrice, currency)}
             </span>
           </>
@@ -128,7 +130,7 @@ export function PriceHistoryChart({ history, currency }: PriceHistoryChartProps)
       </div>
 
       {ticks.length > 1 && (
-        <div className="mt-3 flex justify-between text-xs font-bold text-concrete-gray">
+        <div className="mt-3 flex justify-between text-xs font-bold text-muted-foreground font-mono">
           {ticks.map((tick) => (
             <span key={tick.at}>{formatDateLabel(tick.at)}</span>
           ))}

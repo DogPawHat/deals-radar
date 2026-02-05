@@ -88,12 +88,12 @@ function StoreCard({
   const cooldownLabel = isCooldownActive ? formatCooldown(cooldownRemainingMs) : null;
 
   return (
-    <Card className="bg-white">
+    <Card>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-display font-bold text-lg truncate">{store.name}</h3>
+              <h3 className="font-sans font-bold text-lg truncate">{store.name}</h3>
               {getStatusBadge(store.lastJobStatus, store.isCrawling)}
             </div>
 
@@ -135,9 +135,9 @@ function StoreCard({
               </Button>
 
               {showMenu && (
-                <div className="absolute right-0 top-full mt-1 w-40 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50">
+                <div className="absolute right-0 top-full mt-1 w-40 bg-popover border border-border rounded-md shadow-md z-50">
                   <button
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground flex items-center gap-2"
                     onClick={() => {
                       setShowMenu(false);
                       onEdit(store._id);
@@ -147,7 +147,7 @@ function StoreCard({
                     Edit Source
                   </button>
                   <button
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 text-destructive"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground flex items-center gap-2 text-destructive"
                     onClick={() => {
                       setShowMenu(false);
                       onDelete(store._id);
@@ -170,7 +170,7 @@ function StoresSkeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: 3 }).map((_, i) => (
-        <Card key={i} className="bg-white">
+        <Card key={i}>
           <CardContent className="p-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 space-y-2">
@@ -256,10 +256,10 @@ export function SourcesList() {
 
   if (error) {
     return (
-      <div className="bg-error-bg border-2 border-black p-4">
-        <p className="font-bold text-black">Error loading sources</p>
+      <div className="bg-red-loss-muted border-l-2 border-red-loss p-4 rounded-sm">
+        <p className="font-bold text-foreground">Error loading sources</p>
         <Button
-          variant="default"
+          variant="secondary"
           size="sm"
           className="mt-2"
           onClick={() =>

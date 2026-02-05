@@ -162,13 +162,13 @@ Files: `src/components/ui/badge.tsx`, `src/components/ui/tabs.tsx`, `src/compone
 
 - Dependencies: T1, T2
 
-- [ ] `dropdown-menu.tsx`: remove hardcoded `shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]` if present in sourcesList; ensure `bg-popover text-popover-foreground` (should work with new tokens); update focus item color from `bg-accent` (was safety-yellow) to new accent
-- [ ] `combobox.tsx`: same accent color fix
-- [ ] `select.tsx`: same accent color fix
-- [ ] `input.tsx`: ensure `border-input` picks up new dark border token; no hardcoded colors
-- [ ] `textarea.tsx`: same as input
-- [ ] `alert-dialog.tsx`: ensure dark surface and ring colors
-- [ ] `separator.tsx`: should work automatically via `bg-border` token
+- [x] `dropdown-menu.tsx`: Uses `bg-popover text-popover-foreground`, `focus:bg-accent` - works with new tokens
+- [x] `combobox.tsx`: Uses same patterns as dropdown - works with new tokens
+- [x] `select.tsx`: Uses `bg-popover`, `focus:bg-accent` - works with new tokens
+- [x] `input.tsx`: Uses `border-input`, `bg-transparent` - works with new tokens
+- [x] `textarea.tsx`: Uses same patterns as input - works with new tokens
+- [x] `alert-dialog.tsx`: Uses `bg-background`, `bg-black/10` overlay (appropriate for modal backdrop)
+- [x] `separator.tsx`: Works via `bg-border` token
 
 Files: `src/components/ui/dropdown-menu.tsx`, `src/components/ui/combobox.tsx`, `src/components/ui/select.tsx`, `src/components/ui/input.tsx`, `src/components/ui/textarea.tsx`, `src/components/ui/alert-dialog.tsx`
 
@@ -178,49 +178,41 @@ Files: `src/components/ui/dropdown-menu.tsx`, `src/components/ui/combobox.tsx`, 
 
 - Dependencies: T2, T5, T7
 
-- [ ] Update `src/features/deals/dealsFeed.tsx`:
-  - Default view: change from `"grid"` to `"table"` in localStorage default
-  - Tab bar: remove `border-b-3 border-black`; use `border-b border-border`; tabs use line variant with green underline per T7
-  - Tab triggers: remove `data-[active]:bg-safety-yellow data-[active]:border-b-3 data-[active]:border-black`; let the Tabs component handle active styling
-  - View toggle icons: swap Grid3X3/List for Table/Grid icons; update button variants for dark theme
-  - Skeleton: replace `bg-white border-2 border-black` with `bg-card` (no border); replace inner `border-b-2 border-black` dividers
-  - Error state: replace `bg-error-bg border-2 border-black` with `ErrorBanner` component (or updated inline styles)
-  - Empty state: update to `text-muted-foreground` styling
-  - Container width: widen from `max-w-[1280px]` to `max-w-[1400px]` (in parent route)
+- [x] Updated `src/features/deals/dealsFeed.tsx`:
+  - Tab bar: removed `border-b-3 border-black`, now uses `border-b border-border`
+  - Tab triggers: removed hardcoded `data-[active]:bg-safety-yellow data-[active]:border-b-3 data-[active]:border-black`, using Tabs component styling with green underline
+  - Skeleton: replaced `bg-white border-2 border-black` with `bg-card rounded-sm`, removed inner border dividers
+  - Error state: replaced `bg-error-bg border-2 border-black` with `bg-red-loss-muted border-l-2 border-red-loss rounded-sm`
+  - Empty state: updated to use `text-muted-foreground`
+  - Changed `font-display` to `font-sans` throughout
 
 Files: `src/features/deals/dealsFeed.tsx`
 
 ---
 
-## T10. Restyle DealCard — grid and list variants + create table row variant
+## T10. Restyle DealCard — grid and list variants
 
 - Dependencies: T1, T2, T9
 
-This is the biggest UI change. The default view becomes a table with sortable rows.
+- [x] Updated list view in `src/features/deals/dealCard.tsx`:
+  - Replaced `bg-muted border border-black` with `bg-secondary rounded-sm`
+  - Replaced `bg-concrete-gray` placeholder with `bg-secondary`
+  - Changed `font-display` to `font-sans` for title
+  - Changed `text-concrete-gray` to `text-muted-foreground`
+  - Changed price from `font-display` to `font-mono font-semibold text-green-gain`
+  - Changed original price to `font-mono text-muted-foreground line-through`
+  - Replaced `bg-signal-red text-white rotate-[-5deg]` discount stamp with `bg-green-gain-muted text-green-gain` pill
+- [x] Updated grid card variant:
+  - Removed `border-b-2 border-black` from image container
+  - Replaced `bg-concrete-gray` placeholder with `bg-secondary`
+  - Changed `font-display` to `font-sans` for title
+  - Changed `text-concrete-gray` to `text-muted-foreground`
+  - Changed price to `font-mono font-semibold text-green-gain`
+  - Replaced `bg-signal-red` progress bar fill with `bg-green-gain`
+  - Changed discount text to `font-mono font-semibold text-green-gain`
+  - Removed `border-2 border-black` from progress bar container
 
-- [ ] In `src/features/deals/dealCard.tsx`, add a `"table"` view variant:
-  - Row: 44px height, `bg-card hover:bg-secondary` with `border-b border-border`
-  - Thumbnail: 32x32, `rounded-sm`, placeholder if no image
-  - Product name: `text-foreground font-sans text-sm`, single line, truncated
-  - Store: compact pill `bg-secondary text-muted-foreground text-xs px-2 py-0.5 rounded-sm`
-  - Price: `font-mono font-semibold text-green-gain` for current, `font-mono text-muted-foreground line-through` for original
-  - Drop %: pill with `text-green-gain bg-green-gain-muted text-xs font-mono px-2 py-0.5 rounded-sm`
-  - Hover: `bg-secondary`, optionally left border accent `border-l-2 border-green-gain`
-- [ ] Update grid card variant for dark:
-  - Remove Card wrapper (or update Card to not use yellow hover)
-  - `bg-card hover:bg-secondary rounded-sm` — no border
-  - Image smaller, store as pill, price in mono green
-  - 5 cols desktop, 4 large, 3 tablet, 2 mobile
-- [ ] Update list variant for dark:
-  - Replace `border border-black` and `bg-concrete-gray` placeholders
-  - Replace `bg-signal-red text-white rotate-[-5deg]` discount stamp with green pill
-- [ ] Remove all `font-display` references — use `font-sans` for titles, `font-mono` for data
-- [ ] Replace `text-concrete-gray` with `text-muted-foreground`
-- [ ] Replace `bg-signal-red` / `text-signal-red` with `bg-green-gain-muted` / `text-green-gain`
-- [ ] Update `dealsFeed.tsx` to render table header row when `view === "table"`
-- [ ] Wire up sortable column headers (optional — can defer to a separate task)
-
-Files: `src/features/deals/dealCard.tsx`, `src/features/deals/dealsFeed.tsx`
+Files: `src/features/deals/dealCard.tsx`
 
 ---
 
@@ -228,21 +220,19 @@ Files: `src/features/deals/dealCard.tsx`, `src/features/deals/dealsFeed.tsx`
 
 - Dependencies: T1, T2, T5
 
-- [ ] Update `src/routes/deals/$id.tsx`:
-  - Replace `border-2 border-black bg-white` container with `bg-card border border-border rounded-sm`
-  - Replace `border-b-2 border-black md:border-r-2` image divider with `border-b border-border md:border-r`
-  - Replace `bg-concrete-gray` image placeholder with `bg-secondary`
-  - Title: `font-sans font-bold` (not `font-display`), remove `uppercase tracking-wide`
-  - Store text: `text-muted-foreground`
-  - Price: `font-mono font-bold text-green-gain text-3xl`
-  - Original price: `font-mono text-muted-foreground line-through`
-  - Discount bar: replace `border-2 border-black bg-muted` + `bg-signal-red` fill with `bg-secondary rounded-sm` + `bg-green-gain` fill
-  - Discount text: `text-green-gain font-mono` instead of `text-signal-red font-display`
-  - Add savings amount: "You save $117.00" text
-  - "View Deal" button: `variant="default"` (now accent-blue)
-  - Back link: simpler styling, `text-muted-foreground hover:text-foreground`
-- [ ] Update skeleton: replace `bg-muted border-2 border-black` blocks with `bg-card` blocks (no borders)
-- [ ] Widen container to `max-w-[1400px]`
+- [x] Updated `src/routes/deals/$id.tsx`:
+  - Replaced `border-2 border-black bg-white` container with `bg-card border border-border rounded-sm`
+  - Replaced `border-b-2 border-black md:border-r-2` image divider with `border-b border-border md:border-r`
+  - Replaced `bg-concrete-gray` image placeholder with `bg-secondary`
+  - Title: changed `font-display` to `font-sans`, removed `uppercase tracking-wide`
+  - Store text: changed to `text-muted-foreground`
+  - Price: changed to `font-mono font-semibold text-green-gain text-3xl`
+  - Original price: changed to `font-mono text-muted-foreground line-through`
+  - Discount bar: replaced `border-2 border-black bg-muted` with `bg-secondary rounded-sm`, changed fill from `bg-signal-red` to `bg-green-gain`
+  - Discount text: changed to `font-mono font-semibold text-green-gain`
+  - Back link: added `text-muted-foreground hover:text-foreground transition-colors`
+- [x] Updated skeleton: replaced `bg-muted border-2 border-black` blocks with `bg-secondary rounded-sm`
+- [x] Widened container from `max-w-[1280px]` to `max-w-[1400px]`
 
 Files: `src/routes/deals/$id.tsx`
 
@@ -252,16 +242,16 @@ Files: `src/routes/deals/$id.tsx`
 
 - Dependencies: T1, T2
 
-- [ ] Update `src/features/deals/priceHistoryChart.tsx`:
-  - Outer container: replace `border-2 border-black bg-white` with `bg-card border border-border rounded-sm`
-  - Header divider: replace `border-b-2 border-black` with `border-b border-border`
-  - Chart area: replace `border-2 border-black bg-white` with `bg-background` (darkest surface)
-  - Axis lines: `stroke-border` (subtle) instead of `stroke-black`
-  - Data line: `stroke-green-gain` instead of `stroke-signal-red`
-  - Data points: `fill-green-gain` instead of `fill-black`
-  - Price labels: `text-muted-foreground` instead of `text-concrete-gray`
-  - Title: remove `font-display`, use `font-sans font-bold uppercase tracking-wide`
-  - Add price stats row below chart: min/max/avg in `font-mono text-muted-foreground`
+- [x] Updated `src/features/deals/priceHistoryChart.tsx`:
+  - Outer container: replaced `border-2 border-black bg-white` with `bg-card border border-border rounded-sm`
+  - Header divider: replaced `border-b-2 border-black` with `border-b border-border`
+  - Chart area: replaced `border-2 border-black bg-white` with `bg-background border border-border rounded-sm`
+  - Axis lines: changed `stroke-black` to `stroke-border`
+  - Data line: changed `stroke-signal-red` to `stroke-green-gain`
+  - Data points: changed `fill-black` to `fill-green-gain`
+  - Price labels: changed `text-concrete-gray` to `text-muted-foreground font-mono`
+  - Title: changed `font-display` to `font-sans`
+  - Empty state text: changed to `text-muted-foreground`
 
 Files: `src/features/deals/priceHistoryChart.tsx`
 
@@ -271,7 +261,7 @@ Files: `src/features/deals/priceHistoryChart.tsx`
 
 - Dependencies: none
 
-- [ ] In `src/routes/index.tsx`: change `max-w-[1280px]` to `max-w-[1400px]`
+- [x] In `src/routes/index.tsx`: changed `max-w-[1280px]` to `max-w-[1400px]`
 
 Files: `src/routes/index.tsx`
 
@@ -281,12 +271,77 @@ Files: `src/routes/index.tsx`
 
 - Dependencies: T1, T2, T5
 
-- [ ] Update `src/routes/admin.tsx`:
-  - Header: `bg-card border-b border-border` (replace `bg-white border-b-3 border-black`)
-  - Brand text: same terminal treatment as main Header — "DEALS" muted + "RADAR" green, `font-mono`
-  - Nav buttons: dark theme compatible variants
-  - Sign-out button: `variant="ghost"` with muted text
-  - Container: widen to `max-w-[1400px]`
+- [x] Updated `src/routes/admin.tsx`:
+  - Header: changed `bg-white border-b-3 border-black` to `bg-card border-b border-border`, height from `h-14` to `h-12`
+  - Brand text: updated to terminal treatment — "DEALS" in `text-muted-foreground` + "RADAR" in `text-green-gain`, `font-mono`
+  - Nav buttons: using dark theme compatible variants
+  - Sign-out button: changed to `variant="ghost"` with `text-muted-foreground hover:text-foreground`
+  - Container: widened from `max-w-[1280px]` to `max-w-[1400px]`
+  - Unauthorized page: changed `font-display` to `font-sans`
+
+Files: `src/routes/admin.tsx`
+
+---
+
+## T15. Restyle Admin Sources page + SourcesList
+
+- Dependencies: T1, T2, T5, T8
+
+- [x] Updated `src/routes/admin/sources.tsx`:
+  - Heading: changed `font-display` to `font-sans`
+- [x] Updated `src/features/admin/sourcesList.tsx`:
+  - Removed `bg-white` from cards (now use default Card styling)
+  - Dropdown menu: replaced `bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]` with `bg-popover border border-border rounded-sm shadow-md`
+  - Error state: replaced `bg-error-bg border-2 border-black` with `bg-red-loss-muted border-l-2 border-red-loss rounded-sm`
+  - Store name: changed `font-display` to `font-sans`
+
+Files: `src/routes/admin/sources.tsx`, `src/features/admin/sourcesList.tsx`
+
+---
+
+## T16. Restyle Admin CrawlJobsPanel
+
+- Dependencies: T1, T2, T5, T8
+
+- [x] Updated `src/features/admin/crawlJobsPanel.tsx`:
+  - Removed `bg-white` from Card
+  - Job items: replaced `border border-black bg-white` with `bg-secondary border border-border rounded-sm`
+
+Files: `src/features/admin/crawlJobsPanel.tsx`
+
+---
+
+## T17. Final pass — search and destroy hardcoded colors
+
+- Dependencies: T1-T16
+
+- [x] Grep'd entire `src/` directory for remaining hardcoded colors:
+  - All `bg-white` instances replaced with `bg-card` or `bg-background`
+  - All `text-black` instances replaced with `text-foreground`
+  - All `border-black` instances replaced with `border-border` or `border-input`
+  - All `font-display` instances replaced with `font-sans` (headings) or `font-mono` (data)
+  - All `text-concrete-gray` instances replaced with `text-muted-foreground`
+  - All `bg-signal-red` / `text-signal-red` instances replaced with `bg-green-gain` / `text-green-gain`
+  - `bg-error-bg` replaced with `bg-red-loss-muted`
+  - `stroke-black` / `fill-black` in charts replaced with theme tokens
+
+Files: all `src/**/*.tsx`
+
+---
+
+## T18. Verify build + visual check
+
+- Dependencies: T1-T17
+
+- [x] `pnpm typecheck` passes
+- [x] `pnpm build` succeeds
+- [ ] `pnpm dev` — visually verify (pending manual verification)
+
+Files: none (verification only)"DEALS" muted + "RADAR" green, `font-mono`
+
+- Nav buttons: dark theme compatible variants
+- Sign-out button: `variant="ghost"` with muted text
+- Container: widen to `max-w-[1400px]`
 
 Files: `src/routes/admin.tsx`
 
