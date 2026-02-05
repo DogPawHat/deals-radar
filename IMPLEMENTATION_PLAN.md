@@ -14,14 +14,14 @@ Goal: transform the current Supermarket Brutalist UI into a Dark Data Terminal a
 
 - Dependencies: none
 
-- [ ] `pnpm remove @fontsource-variable/work-sans @fontsource/archivo-black`
-- [ ] `pnpm add @fontsource-variable/geist-sans @fontsource-variable/jetbrains-mono` (or equivalent fontsource packages)
-- [ ] Update `src/styles.css`:
-  - Replace `@import "@fontsource-variable/work-sans"` and `@import "@fontsource/archivo-black"` with new font imports
-  - In `:root`: update `--font-display` and `--font-body` to Geist Sans; add `--font-mono` for JetBrains Mono
-  - In `@theme inline`: update `--font-sans`, `--font-display`, `--font-body` to Geist Sans; add `--font-mono` as JetBrains Mono
-  - In `@layer base`: keep `h1-h6` using `font-sans font-bold` (not `font-display` — all headings become Geist Sans 700 uppercase)
-- [ ] Verify no import errors: `pnpm typecheck`
+- [x] `pnpm remove @fontsource-variable/work-sans @fontsource/archivo-black`
+- [x] `pnpm add @fontsource/geist-sans @fontsource/jetbrains-mono` (using non-variable packages)
+- [x] Update `src/styles.css`:
+  - Replaced font imports with Geist Sans (400-700) and JetBrains Mono (400-700)
+  - In `:root`: updated `--font-display` and `--font-body` to Geist Sans; added `--font-mono` for JetBrains Mono
+  - In `@theme inline`: updated `--font-sans`, `--font-display`, `--font-body` to Geist Sans; added `--font-mono` as JetBrains Mono
+  - In `@layer base`: kept `h1-h6` using `font-sans font-bold`
+- [x] Verify no import errors: `pnpm typecheck`
 
 Files: `package.json`, `src/styles.css`
 
