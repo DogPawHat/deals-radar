@@ -84,7 +84,7 @@ Files: `src/styles.css`
 
 - Dependencies: none
 
-- [ ] In `src/routes/__root.tsx` `RootDocument`: add `className="dark"` to `<html>` tag (enables dark class if any shadcn components still reference `dark:` utilities)
+- [x] In `src/routes/__root.tsx` `RootDocument`: add `className="dark"` to `<html>` tag (enables dark class if any shadcn components still reference `dark:` utilities)
 - [ ] On `<body>`: no changes needed (already uses `bg-background text-foreground` via base layer)
 
 Files: `src/routes/__root.tsx`

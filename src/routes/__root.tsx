@@ -81,7 +81,7 @@ function RootOutlet({ children }: { children: React.ReactNode }) {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
