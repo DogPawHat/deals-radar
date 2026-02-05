@@ -124,7 +124,13 @@ function StoreCard({
             </div>
 
             <div className="relative">
-              <Button variant="ghost" size="icon-sm" onClick={() => setShowMenu(!showMenu)}>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setShowMenu(!showMenu)}
+                aria-label="Open menu"
+                aria-expanded={showMenu}
+              >
                 <MoreHorizontal className="size-4" />
               </Button>
 

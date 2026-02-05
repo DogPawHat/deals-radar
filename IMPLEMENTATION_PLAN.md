@@ -1,360 +1,366 @@
-# Implementation Plan
+# Implementation Plan: Dark Data Terminal Redesign
 
-Goal: implement entire spec using TanStack Start + Convex + Confect + Effect. Tests first for each task. Tasks are agent-sized, dependency-aware.
+Goal: transform the current Supermarket Brutalist UI into a Dark Data Terminal aesthetic per the revised SPEC.md. All backend logic, data queries, auth, and crawl pipeline remain unchanged — this is a pure frontend/styling effort.
 
 ## Task Legend
 
-- Each task: write tests first, then implementation, then update docs if needed.
-- Dependencies listed as `deps:` task ids.
-- Each task includes a description (>=2 sentences) and target locations for new code.
-- Completion status is tracked here, not in `SPEC.md`.
-
-## Tasks
-
-T1. Repo baseline + tooling
-
-- description: Establish a reliable local workflow so agents can run tests and linting consistently across tasks. This task also sets the project-wide environment variable contract so later tasks can rely on validated config.
-- completion: [X]
-- locations: `package.json`, `docs/ENV.md`, `.env.example`, `src/env.ts` (t3 env), `convex/env.ts` (Effect Config helper)
-- tests: smoke tests for `pnpm test`, `pnpm lint`, `pnpm typecheck`; env var presence check
-- impl: add missing scripts/configs, document commands, create `.env.example` and env var doc block
-- env vars:
-  - add `.env.example` with required keys (no secrets)
-  - document local `.env`, Netlify deploy vars, Convex dashboard vars
-  - react/client env via `@t3-oss/env-*` (t3 env) for `import.meta.env` validation
-  - convex env via Effect `Config` (as in `convex/firecrawlNodeActions.ts`) for runtime config
-- deps: none
-
-```json
-{
-  "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "eslint .",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
-  }
-}
-```
-
-```env
-VITE_CONVEX_URL=
-VITE_CLERK_PUBLISHABLE_KEY=
-CLERK_SECRET_KEY=
-CLERK_JWT_ISSUER_DOMAIN=
-FIRECRAWL_API_KEY=
-```
-
-T2. Convex schema + types
-
-- description: Implement the database schema exactly as specified so all server code can share a stable contract. This ensures indexes exist for queries and deduplication to work without costly scans.
-- completion: [X]
-- locations: `convex/schema.ts`, `convex/__tests__/schema.test.ts`
-- tests: schema validation tests for each table and their indexes
-- impl: update `convex/schema.ts` with spec fields, indexes, and export table definitions
-- deps: T1
-
-```ts
-export const deals = defineTable(
-  Schema.Struct({
-    storeId: Id.Id("stores"),
-    title: Schema.String,
-    url: Schema.String,
-    canonicalUrl: Schema.String,
-    dedupKey: Schema.String,
-    image: Schema.optional(Schema.String),
-    price: Schema.Number,
-    currency: Schema.String,
-    msrp: Schema.optional(Schema.Number),
-  }),
-).index("by_dedupeKey_for_store", ["dedupKey", "storeId"]);
-```
-
-T3. Confect/Effect helpers
-
-- description: Centralize Effect helpers so all Convex actions/queries use consistent error handling and config access. This reduces copy/paste errors and keeps Convex code aligned with Effect conventions.
-- completion: [X]
-- locations: `convex/lib/effect.ts`, `convex/lib/__tests__/effect.test.ts`
-- tests: Effect roundtrip for schema decode, error tagging
-- impl: create Effect helpers for decode, config, and error tagging
-- deps: T2
-
-```ts
-export const decode =
-  <A>(schema: Schema.Schema<A>) =>
-  (input: unknown) =>
-    Schema.decodeUnknown(schema)(input);
-```
-
-T4. Auth guard (admin) via Clerk + Convex auth checks
-
-- description: Add Clerk to TanStack Start for UI auth and integrate Clerk JWTs with Convex for server-side auth enforcement. This task ensures the admin area is protected both at the route level and in all Convex admin functions.
-- completion: [X]
-- locations: `src/start.ts`, `src/routes/__root.tsx`, `src/routes/admin/_layout.tsx`, `convex/auth.config.ts`, `convex/admin/*.ts`
-- tests: unauthenticated access to `/admin/*` redirects to `/sign-in`; Convex admin mutations reject when no user
-- impl: add `@clerk/tanstack-react-start`, `clerkMiddleware()` in `src/start.ts`, wrap root in `<ClerkProvider>`, server `auth()` check in `beforeLoad`, add `getAuthUserId` checks in Convex admin functions, configure Clerk as Convex auth provider
-- note: Convex + Clerk config steps (from Convex auth guide)
-  - create Clerk JWT template named `convex`; copy Issuer URL (Frontend API URL)
-  - set `CLERK_JWT_ISSUER_DOMAIN` in Convex env (dev + prod)
-  - add `convex/auth.config.ts` with provider `domain` + `applicationID: "convex"`
-  - run `npx convex dev` (dev) or `npx convex deploy` (prod) to sync auth config
-  - use `ConvexProviderWithClerk` wrapped by `ClerkProvider` and pass Clerk `useAuth`
-- deps: T1
-
-```tsx
-// src/start.ts
-import { clerkMiddleware } from "@clerk/tanstack-react-start/server";
-import { createStart } from "@tanstack/react-start";
-
-export const startInstance = createStart(() => ({
-  requestMiddleware: [clerkMiddleware()],
-}));
-```
-
-```tsx
-// src/routes/__root.tsx
-import { ClerkProvider } from "@clerk/tanstack-react-start";
-
-function RootDocument({ children }: { children: React.ReactNode }) {
-  return <ClerkProvider>{children}</ClerkProvider>;
-}
-```
-
-```ts
-// convex/auth.config.ts
-import { AuthConfig } from "convex/server";
-
-export default {
-  providers: [
-    {
-      domain: process.env.CLERK_JWT_ISSUER_DOMAIN!,
-      applicationID: "convex",
-    },
-  ],
-} satisfies AuthConfig;
-```
-
-T5. Public data queries
-
-- description: Build server queries for each public tab and filtering rule so the UI can subscribe live. This task defines pagination behavior that will be reused by the feed and list views.
-- completion: [X]
-- locations: `convex/publicDeals.ts`, `convex/__tests__/publicDeals.test.ts`
-- tests: each tab ordering and minimum discount filter
-- impl: Convex query functions + cursor pagination
-- deps: T2, T3
-
-```ts
-return db
-  .query("deals")
-  .filter((q) => q.gte(q.field("percentOff"), 5))
-  .order("desc");
-```
-
-T6. Deal deduplication pipeline
-
-- description: Introduce a deterministic dedup key so crawls do not create duplicates for the same product. This task formalizes the key derivation and validates it in tests.
-- completion: [X]
-- locations: `convex/lib/dedup.ts`, `convex/actions/crawl.ts`
-- tests: deterministic key generation
-- impl: helper in crawl write path
-- deps: T2, T3
-
-```ts
-export const dedupKey = (canonicalUrl: string, title: string) =>
-  createHash("sha256").update(`${canonicalUrl}::${title}`).digest("hex");
-```
-
-T7. Firecrawl schema + fetch action
-
-- description: Implement the Firecrawl client action to fetch and validate deal data using the JSON schema. This task handles success and failure paths consistently with Effect errors.
-- completion: [X]
-- locations: `convex/firecrawlNodeActions.ts`, `convex/actions/runFirecrawl.ts`
-- tests: success parse + failure paths (invalid schema, fetch error)
-- impl: `runFirecrawl` action with schema validation and structured errors
-- deps: T2, T3, T6
-
-```ts
-export const runFirecrawl = action({
-  args: { url: v.string() },
-  handler: async (ctx, { url }) => firecrawl.fetch({ url, schema }),
-});
-```
-
-T8. Robots.txt fetch + parse
-
-- description: Fetch and store robots.txt rules on source save to enforce crawler rules. This task ensures the admin UI can display rules and block runs when necessary.
-- completion: [X]
-- locations: `convex/robots.ts`, `convex/__tests__/robots.test.ts`, `convex/schema.ts`
-- tests: rule parsing, blocked detection for sample paths
-- impl: parser + fetch functions + store rules field in schema
-- deps: T2, T3
-
-```ts
-const rules = parseRobotsTxt(text).forUserAgent("*");
-const isBlocked = !rules.isAllowed(pathname);
-```
-
-T9. Crawl jobs queue + cron
-
-- description: Create the crawl queue logic with concurrency and rate limits to meet the spec. This task includes retries with backoff and persistent job tracking.
-- completion: [X]
-- locations: `convex/crawlJobs.ts`, `convex/__tests__/crawlJobs.test.ts`
-- tests: enqueue due sources, retry schedule (1m/4m/10m)
-- impl: `crawlTick` + `retryFailedJobs` functions with job state transitions
-- deps: T2, T3, T7, T8
-
-```ts
-const backoffMs = [60_000, 240_000, 600_000][attempt - 1];
-const shouldRetry = attempt < 3;
-```
-
-T10. Write deals + price history
-
-- description: Persist crawled deals and append price history entries for each observation. This task also enforces the 5% discount minimum at write time.
-- completion: [X]
-- locations: `convex/crawls.ts`, `convex/priceHistory.ts`, `convex/__tests__/dealsWrite.test.ts`
-- tests: new deal insert, existing deal update, history append
-- impl: write pipeline used by crawl action, price history query
-- deps: T2, T6, T7
-
-```ts
-await db.insert("priceHistory", {
-  dealId,
-  price: item.price,
-  at: Date.now(),
-});
-```
-
-T11. Admin: sources list + actions
-
-- description: Build the admin sources list UI with status indicators and action buttons. This task wires the list to Convex queries and provides the Run Now cooldown.
-- completion: [X]
-- locations: `src/routes/admin/sources.tsx`, `src/features/admin/sourcesList.tsx`, `convex/admin/sources.ts`
-- notes: Implemented list view, run-now cooldown handling, add/edit modal wiring, and delete action with Convex queries/mutations.
-- tests: status badges, run now disabled during cooldown
-- impl: list view + queries + mutations
-- deps: T4, T5, T8, T9
-
-```tsx
-<button disabled={cooldownMs > 0} onClick={() => runNow(sourceId)}>
-  RUN NOW
-</button>
-```
-
-T12. Admin: add/edit source modal
-
-- description: Implement add/edit flow with validation and robots preview on URL blur. This task keeps the form logic isolated from list rendering for easier testing.
-- completion: [X]
-- locations: `src/features/admin/sourceModal.tsx`, `src/features/admin/sourceForm.tsx`, `convex/admin/sources.ts`
-- tests: validation errors, robots rules render on blur
-- impl: modal form, save mutation
-- deps: T11
-
-```tsx
-<input name="url" onBlur={(e) => fetchRobots(e.currentTarget.value)} />
-```
-
-T13. Admin: crawl jobs panel
-
-- description: Add expandable crawl job history with error details and copy. This task ensures admins can diagnose failures quickly.
-- completion: [X]
-- locations: `src/features/admin/crawlJobsPanel.tsx`, `convex/admin/crawlJobs.ts`
-- tests: expand/collapse, copy error payload
-- impl: panel UI + query for recent jobs
-- deps: T11, T9
-
-```tsx
-<button onClick={() => navigator.clipboard.writeText(job.errorDetails ?? "")}>COPY</button>
-```
-
-T14. Public: deals feed UI
-
-- description: Build the public feed with tab filters, grid/list toggle, and infinite scroll. This task ensures the view state is persisted and compatible with live Convex subscriptions.
-- completion: [X]
-- locations: `src/routes/index.tsx`, `src/features/deals/dealsFeed.tsx`, `src/features/deals/dealCard.tsx`
-- tests: tab state, view toggle persistence, skeletons (tests need frontend test setup)
-- impl: `/` page UI
-- deps: T5
-
-```tsx
-const [view, setView] = useLocalStorage("dealView", "grid");
-```
-
-T15. Public: deal detail page
-
-- description: Implement the deal detail page with hero image, pricing, and price history chart. This task also wires the external link to open in a new tab.
-- completion: [X]
-- locations: `src/routes/deals/$id.tsx`, `src/features/deals/priceHistoryChart.tsx`
-- tests: chart data mapping, link opens new tab
-- impl: `/deals/:id` page + chart component
-- deps: T5, T10
-
-```tsx
-<a href={deal.url} target="_blank" rel="noreferrer">
-  VIEW DEAL
-</a>
-```
-
-T16. Shared UI system (Brutalist)
-
-- description: Implement global styles and core components that follow the Supermarket Brutalist style. This task provides consistent visuals across admin and public routes.
-- completion: [X]
-- locations: `src/styles.css`, `src/components/ui/*`
-- tests: class snapshots for key components
-- impl: global CSS tokens, buttons, tabs, cards, banners
-- deps: T1
-
-```css
-:root {
-  --color-bg: #ffffff;
-  --color-text: #000000;
-  --color-accent: #ffe500;
-  --border-strong: 3px solid #000000;
-}
-```
-
-T17. Loading/empty/error states
-
-- description: Implement skeletons, empty states, and error banners across public and admin screens. This ensures users always have a clear, branded state when data is missing or loading.
-- completion: [X]
-- locations: `src/components/ui/emptyState.tsx`, `src/components/ui/skeleton.tsx`, `src/components/ui/errorBanner.tsx`
-- tests: empty state rendering, error banner visibility
-- impl: components wired into list/detail/admin pages
-- deps: T14, T15, T16
-
-```tsx
-{
-  deals.length === 0 ? <EmptyState label="NO DEALS FOUND" /> : <DealGrid />;
-}
-```
-
-T18. Accessibility pass
-
-- description: Verify focus styles, aria labels, and headings across the UI. This task ensures the interface is keyboard accessible and meets the spec's a11y requirements.
-- completion: [ ]
-- locations: `src/components/ui/*`, `src/routes/*`
-- tests: a11y snapshots for interactive elements
-- impl: adjust markup + focus ring styles
-- deps: T14, T15, T16
-
-```css
-:focus-visible {
-  outline: 3px solid #000000;
-  outline-offset: 2px;
-}
-```
-
-T19. End-to-end verification
-
-- description: Build an e2e harness that runs through crawl -> feed -> detail with mocked Firecrawl and Convex. This provides a final integration check for the entire data path.
-- completion: [ ]
-- locations: `tests/e2e/*`, `convex/test/*`, `src/tests/*`
-- tests: e2e flow with mocked Firecrawl + Convex test env
-- impl: e2e harness and fixtures
-- deps: T7, T9, T10, T14, T15
-
-```ts
-test("crawl shows in feed", async () => {
-  await seedCrawlJob();
-  await expect(page.getByText("NEWEST")).toBeVisible();
-});
-```
+- `[x]` = done
+- `[-]` = in progress
+- `[ ]` = pending
+
+---
+
+## T1. Swap fonts — install Geist Sans + JetBrains Mono
+
+- Dependencies: none
+
+- [ ] `pnpm remove @fontsource-variable/work-sans @fontsource/archivo-black`
+- [ ] `pnpm add @fontsource-variable/geist-sans @fontsource-variable/jetbrains-mono` (or equivalent fontsource packages)
+- [ ] Update `src/styles.css`:
+  - Replace `@import "@fontsource-variable/work-sans"` and `@import "@fontsource/archivo-black"` with new font imports
+  - In `:root`: update `--font-display` and `--font-body` to Geist Sans; add `--font-mono` for JetBrains Mono
+  - In `@theme inline`: update `--font-sans`, `--font-display`, `--font-body` to Geist Sans; add `--font-mono` as JetBrains Mono
+  - In `@layer base`: keep `h1-h6` using `font-sans font-bold` (not `font-display` — all headings become Geist Sans 700 uppercase)
+- [ ] Verify no import errors: `pnpm typecheck`
+
+Files: `package.json`, `src/styles.css`
+
+---
+
+## T2. Rewrite CSS theme tokens for dark terminal palette
+
+- Dependencies: none
+
+Replace all `:root` and `.dark` tokens with a single dark-only token set. Remove the `.dark` class mechanism — the app is dark by default.
+
+- [ ] In `:root`, set new token values per SPEC:
+
+| Token                      | New Value               | Notes                           |
+| -------------------------- | ----------------------- | ------------------------------- |
+| `--background`             | `oklch(0.04 0 0)`       | #0A0A0B                         |
+| `--foreground`             | `oklch(0.91 0.005 280)` | #E8E8ED                         |
+| `--card`                   | `oklch(0.09 0 0)`       | #141416 (surface)               |
+| `--card-foreground`        | `oklch(0.91 0.005 280)` | #E8E8ED                         |
+| `--popover`                | `oklch(0.09 0 0)`       | #141416                         |
+| `--popover-foreground`     | `oklch(0.91 0.005 280)` | #E8E8ED                         |
+| `--primary`                | `oklch(0.62 0.19 250)`  | #3B82F6 (accent-blue)           |
+| `--primary-foreground`     | `oklch(1 0 0)`          | white                           |
+| `--secondary`              | `oklch(0.12 0 0)`       | #1C1C1F (surface-hover)         |
+| `--secondary-foreground`   | `oklch(0.91 0.005 280)` | #E8E8ED                         |
+| `--muted`                  | `oklch(0.12 0 0)`       | #1C1C1F                         |
+| `--muted-foreground`       | `oklch(0.46 0.005 280)` | #6E6E7A                         |
+| `--accent`                 | `oklch(0.12 0 0)`       | #1C1C1F                         |
+| `--accent-foreground`      | `oklch(0.91 0.005 280)` | #E8E8ED                         |
+| `--destructive`            | `oklch(0.59 0.23 25)`   | #FF4444                         |
+| `--destructive-foreground` | `oklch(1 0 0)`          | white                           |
+| `--border`                 | `oklch(0.16 0 0)`       | #222225 (border-subtle)         |
+| `--input`                  | `oklch(0.22 0 0)`       | #333338 (border-active)         |
+| `--ring`                   | `oklch(0.62 0.19 250)`  | #3B82F6 (accent-blue for focus) |
+
+- [ ] Replace brand colors:
+
+| Old Token               | New Token                | Value                                       |
+| ----------------------- | ------------------------ | ------------------------------------------- |
+| `--color-safety-yellow` | `--color-green-gain`     | `oklch(0.85 0.25 155)` (#00FF88)            |
+| `--color-signal-red`    | `--color-red-loss`       | `oklch(0.59 0.23 25)` (#FF4444)             |
+| `--color-concrete-gray` | remove                   | Use `--muted-foreground` instead            |
+| `--color-success`       | keep, update             | `oklch(0.85 0.25 155)` (same as green-gain) |
+| `--color-error-bg`      | `--color-red-loss-muted` | `oklch(0.59 0.23 25 / 0.13)`                |
+
+- [ ] Add new tokens: `--color-green-gain-muted`: `oklch(0.85 0.25 155 / 0.13)`, `--color-accent-amber`: `oklch(0.77 0.17 75)` (#F59E0B)
+- [ ] Update `@theme inline` to expose new tokens as Tailwind utilities
+- [ ] Remove `.dark { ... }` block — no longer needed
+- [ ] Remove `@custom-variant dark` — no longer needed
+- [ ] Update `--radius` from `0px` to `4px`; update `--radius-sm` to `2px`, `--radius-md` to `4px`, `--radius-lg` to `4px`, leave `--radius-xl` through `--radius-4xl` at `4px`
+- [ ] Update `:focus-visible` from `3px solid #000000` to `2px solid var(--ring)` with `outline-offset: 2px`
+- [ ] Remove or rewrite `@layer components` classes (`.btn-primary`, `.btn-secondary`, `.tab-active`, `.tab-inactive`, `.card-brutalist`, `.input-brutalist`) — these are unused dead code but should either be removed or updated
+- [ ] Verify build: `pnpm build`
+
+Files: `src/styles.css`
+
+---
+
+## T3. Update root document shell
+
+- Dependencies: none
+
+- [ ] In `src/routes/__root.tsx` `RootDocument`: add `className="dark"` to `<html>` tag (enables dark class if any shadcn components still reference `dark:` utilities)
+- [ ] On `<body>`: no changes needed (already uses `bg-background text-foreground` via base layer)
+
+Files: `src/routes/__root.tsx`
+
+---
+
+## T4. Restyle Header component
+
+- Dependencies: T1, T2, T5
+
+- [ ] Replace current `Header.tsx` with dark terminal style:
+  - Slim 48px bar: `h-12` (down from `h-16`)
+  - Background: `bg-card` (surface color) with `border-b border-border`
+  - Brand text: "DEALS" in `text-muted-foreground` + "RADAR" in `text-green-gain`, `font-mono` — both monospace
+  - Admin button: `variant="ghost"` with `text-muted-foreground`
+  - Container: widen to `max-w-[1400px]`
+- [ ] Replace all hardcoded `bg-white`, `border-black` classes
+
+Files: `src/components/Header.tsx`
+
+---
+
+## T5. Restyle shadcn Button component
+
+- Dependencies: T1, T2
+
+- [ ] Rewrite CVA variants in `src/components/ui/button.tsx`:
+  - `default` (primary): `bg-primary text-primary-foreground` hover lightens slightly
+  - `destructive`: `bg-destructive text-destructive-foreground` hover lightens
+  - `outline`: `border border-input bg-transparent text-foreground` hover `bg-secondary`
+  - `secondary`: `bg-secondary text-secondary-foreground` hover lightens
+  - `ghost`: `hover:bg-secondary text-muted-foreground hover:text-foreground`
+  - `link`: `text-primary underline-offset-4 hover:underline`
+- [ ] Remove all hardcoded `bg-black`, `text-black`, `bg-white`, `text-white`, `border-black` references
+- [ ] Keep uppercase + tracking-wide + font-bold base styles (fits terminal aesthetic)
+
+Files: `src/components/ui/button.tsx`
+
+---
+
+## T6. Restyle shadcn Card component
+
+- Dependencies: T1, T2
+
+- [ ] Update `src/components/ui/card.tsx`:
+  - Base: `bg-card text-card-foreground border border-border` (1px border, not 2px)
+  - Remove `hover:border-[3px] hover:border-black hover:bg-safety-yellow`
+  - New hover: `hover:bg-secondary` (subtle background shift)
+  - `rounded-sm` (uses new 2px radius token)
+- [ ] Update `CardTitle`: change `font-display` to `font-sans`
+
+Files: `src/components/ui/card.tsx`
+
+---
+
+## T7. Restyle shadcn Badge, Tabs, Skeleton, DiscountBadge, ErrorBanner, Empty
+
+- Dependencies: T1, T2, T5
+
+- [ ] `badge.tsx`: update variant colors for dark theme — `default` uses `bg-secondary text-foreground`, `destructive` uses `bg-red-loss-muted text-red-loss`
+- [ ] `tabs.tsx`:
+  - Line variant active: change `after:bg-foreground` underline to `after:bg-green-gain`
+  - Trigger text: inactive `text-muted-foreground`, active `text-foreground`
+  - Remove any `bg-safety-yellow` or `border-black` references
+- [ ] `skeleton.tsx`: change `bg-muted` to `bg-card` with subtle shimmer (keep `animate-pulse`)
+- [ ] `discount-badge.tsx`: replace `bg-signal-red text-white font-display` with `bg-green-gain-muted text-green-gain font-mono font-semibold`
+- [ ] `error-banner.tsx`: replace `bg-error-bg border-2 border-black` with `bg-red-loss-muted border-l-2 border-red-loss text-foreground`; update retry button to `variant="secondary"`
+- [ ] `empty.tsx`: ensure `text-muted-foreground` is used (likely already fine)
+
+Files: `src/components/ui/badge.tsx`, `src/components/ui/tabs.tsx`, `src/components/ui/skeleton.tsx`, `src/components/ui/discount-badge.tsx`, `src/components/ui/error-banner.tsx`, `src/components/ui/empty.tsx`
+
+---
+
+## T8. Restyle remaining shadcn components (dropdown, combobox, select, input, alert-dialog, separator)
+
+- Dependencies: T1, T2
+
+- [ ] `dropdown-menu.tsx`: remove hardcoded `shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]` if present in sourcesList; ensure `bg-popover text-popover-foreground` (should work with new tokens); update focus item color from `bg-accent` (was safety-yellow) to new accent
+- [ ] `combobox.tsx`: same accent color fix
+- [ ] `select.tsx`: same accent color fix
+- [ ] `input.tsx`: ensure `border-input` picks up new dark border token; no hardcoded colors
+- [ ] `textarea.tsx`: same as input
+- [ ] `alert-dialog.tsx`: ensure dark surface and ring colors
+- [ ] `separator.tsx`: should work automatically via `bg-border` token
+
+Files: `src/components/ui/dropdown-menu.tsx`, `src/components/ui/combobox.tsx`, `src/components/ui/select.tsx`, `src/components/ui/input.tsx`, `src/components/ui/textarea.tsx`, `src/components/ui/alert-dialog.tsx`
+
+---
+
+## T9. Restyle DealsFeed — tabs, view toggle, skeletons, error/empty states
+
+- Dependencies: T2, T5, T7
+
+- [ ] Update `src/features/deals/dealsFeed.tsx`:
+  - Default view: change from `"grid"` to `"table"` in localStorage default
+  - Tab bar: remove `border-b-3 border-black`; use `border-b border-border`; tabs use line variant with green underline per T7
+  - Tab triggers: remove `data-[active]:bg-safety-yellow data-[active]:border-b-3 data-[active]:border-black`; let the Tabs component handle active styling
+  - View toggle icons: swap Grid3X3/List for Table/Grid icons; update button variants for dark theme
+  - Skeleton: replace `bg-white border-2 border-black` with `bg-card` (no border); replace inner `border-b-2 border-black` dividers
+  - Error state: replace `bg-error-bg border-2 border-black` with `ErrorBanner` component (or updated inline styles)
+  - Empty state: update to `text-muted-foreground` styling
+  - Container width: widen from `max-w-[1280px]` to `max-w-[1400px]` (in parent route)
+
+Files: `src/features/deals/dealsFeed.tsx`
+
+---
+
+## T10. Restyle DealCard — grid and list variants + create table row variant
+
+- Dependencies: T1, T2, T9
+
+This is the biggest UI change. The default view becomes a table with sortable rows.
+
+- [ ] In `src/features/deals/dealCard.tsx`, add a `"table"` view variant:
+  - Row: 44px height, `bg-card hover:bg-secondary` with `border-b border-border`
+  - Thumbnail: 32x32, `rounded-sm`, placeholder if no image
+  - Product name: `text-foreground font-sans text-sm`, single line, truncated
+  - Store: compact pill `bg-secondary text-muted-foreground text-xs px-2 py-0.5 rounded-sm`
+  - Price: `font-mono font-semibold text-green-gain` for current, `font-mono text-muted-foreground line-through` for original
+  - Drop %: pill with `text-green-gain bg-green-gain-muted text-xs font-mono px-2 py-0.5 rounded-sm`
+  - Hover: `bg-secondary`, optionally left border accent `border-l-2 border-green-gain`
+- [ ] Update grid card variant for dark:
+  - Remove Card wrapper (or update Card to not use yellow hover)
+  - `bg-card hover:bg-secondary rounded-sm` — no border
+  - Image smaller, store as pill, price in mono green
+  - 5 cols desktop, 4 large, 3 tablet, 2 mobile
+- [ ] Update list variant for dark:
+  - Replace `border border-black` and `bg-concrete-gray` placeholders
+  - Replace `bg-signal-red text-white rotate-[-5deg]` discount stamp with green pill
+- [ ] Remove all `font-display` references — use `font-sans` for titles, `font-mono` for data
+- [ ] Replace `text-concrete-gray` with `text-muted-foreground`
+- [ ] Replace `bg-signal-red` / `text-signal-red` with `bg-green-gain-muted` / `text-green-gain`
+- [ ] Update `dealsFeed.tsx` to render table header row when `view === "table"`
+- [ ] Wire up sortable column headers (optional — can defer to a separate task)
+
+Files: `src/features/deals/dealCard.tsx`, `src/features/deals/dealsFeed.tsx`
+
+---
+
+## T11. Restyle Deal Detail page
+
+- Dependencies: T1, T2, T5
+
+- [ ] Update `src/routes/deals/$id.tsx`:
+  - Replace `border-2 border-black bg-white` container with `bg-card border border-border rounded-sm`
+  - Replace `border-b-2 border-black md:border-r-2` image divider with `border-b border-border md:border-r`
+  - Replace `bg-concrete-gray` image placeholder with `bg-secondary`
+  - Title: `font-sans font-bold` (not `font-display`), remove `uppercase tracking-wide`
+  - Store text: `text-muted-foreground`
+  - Price: `font-mono font-bold text-green-gain text-3xl`
+  - Original price: `font-mono text-muted-foreground line-through`
+  - Discount bar: replace `border-2 border-black bg-muted` + `bg-signal-red` fill with `bg-secondary rounded-sm` + `bg-green-gain` fill
+  - Discount text: `text-green-gain font-mono` instead of `text-signal-red font-display`
+  - Add savings amount: "You save $117.00" text
+  - "View Deal" button: `variant="default"` (now accent-blue)
+  - Back link: simpler styling, `text-muted-foreground hover:text-foreground`
+- [ ] Update skeleton: replace `bg-muted border-2 border-black` blocks with `bg-card` blocks (no borders)
+- [ ] Widen container to `max-w-[1400px]`
+
+Files: `src/routes/deals/$id.tsx`
+
+---
+
+## T12. Restyle PriceHistoryChart for dark theme
+
+- Dependencies: T1, T2
+
+- [ ] Update `src/features/deals/priceHistoryChart.tsx`:
+  - Outer container: replace `border-2 border-black bg-white` with `bg-card border border-border rounded-sm`
+  - Header divider: replace `border-b-2 border-black` with `border-b border-border`
+  - Chart area: replace `border-2 border-black bg-white` with `bg-background` (darkest surface)
+  - Axis lines: `stroke-border` (subtle) instead of `stroke-black`
+  - Data line: `stroke-green-gain` instead of `stroke-signal-red`
+  - Data points: `fill-green-gain` instead of `fill-black`
+  - Price labels: `text-muted-foreground` instead of `text-concrete-gray`
+  - Title: remove `font-display`, use `font-sans font-bold uppercase tracking-wide`
+  - Add price stats row below chart: min/max/avg in `font-mono text-muted-foreground`
+
+Files: `src/features/deals/priceHistoryChart.tsx`
+
+---
+
+## T13. Update index route container width
+
+- Dependencies: none
+
+- [ ] In `src/routes/index.tsx`: change `max-w-[1280px]` to `max-w-[1400px]`
+
+Files: `src/routes/index.tsx`
+
+---
+
+## T14. Restyle Admin layout
+
+- Dependencies: T1, T2, T5
+
+- [ ] Update `src/routes/admin.tsx`:
+  - Header: `bg-card border-b border-border` (replace `bg-white border-b-3 border-black`)
+  - Brand text: same terminal treatment as main Header — "DEALS" muted + "RADAR" green, `font-mono`
+  - Nav buttons: dark theme compatible variants
+  - Sign-out button: `variant="ghost"` with muted text
+  - Container: widen to `max-w-[1400px]`
+
+Files: `src/routes/admin.tsx`
+
+---
+
+## T15. Restyle Admin Sources page + SourcesList
+
+- Dependencies: T1, T2, T5, T8
+
+- [ ] Update `src/routes/admin/sources.tsx`:
+  - Heading: `font-sans font-bold` (not `font-display`), remove explicit uppercase if using CSS
+- [ ] Update `src/features/admin/sourcesList.tsx`:
+  - Remove all `bg-white`, `border-2 border-black` from cards
+  - Use `bg-card border border-border rounded-sm` for source cards
+  - Dropdown menu: remove `shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]` and `bg-white border-2 border-black`; use shadcn `DropdownMenu` component (or update inline styles to use tokens)
+  - Error state: replace `bg-error-bg border-2 border-black` with `bg-red-loss-muted border-l-2 border-red-loss`
+  - Status badges: Idle (`text-muted-foreground`), Crawling (`text-accent-amber`), Error (`text-red-loss`)
+  - Skeleton: dark surface blocks, no borders
+
+Files: `src/routes/admin/sources.tsx`, `src/features/admin/sourcesList.tsx`
+
+---
+
+## T16. Restyle Admin Source Modal + Form + CrawlJobsPanel
+
+- Dependencies: T1, T2, T5, T8
+
+- [ ] `sourceModal.tsx`: AlertDialog will pick up dark tokens from T8; verify max-w and layout
+- [ ] `sourceForm.tsx`: inputs inherit from shadcn Input (T8); verify labels use `text-muted-foreground`; robots preview textarea uses `font-mono` (already does)
+- [ ] `crawlJobsPanel.tsx`:
+  - Replace `border border-black bg-white` on job items with `bg-secondary border border-border rounded-sm`
+  - Replace `bg-white` on Card with nothing (Card inherits `bg-card` from T6)
+  - Status colors: success = `text-green-gain`, failed = `text-red-loss`
+  - Timestamps/data: ensure `font-mono`
+
+Files: `src/features/admin/sourceModal.tsx`, `src/features/admin/sourceForm.tsx`, `src/features/admin/crawlJobsPanel.tsx`
+
+---
+
+## T17. Final pass — search and destroy hardcoded colors
+
+- Dependencies: T1-T16
+
+Grep the entire `src/` directory for any remaining:
+
+- [ ] `bg-white` — replace with `bg-card` or `bg-background`
+- [ ] `text-black` — replace with `text-foreground`
+- [ ] `border-black` — replace with `border-border` or `border-input`
+- [ ] `bg-black` — replace with `bg-foreground` or appropriate dark equivalent
+- [ ] `stroke-black` / `fill-black` — replace with token-based classes
+- [ ] `#000000` / `rgba(0,0,0` — replace with CSS variable references
+- [ ] `safety-yellow` — replace with `green-gain` or remove
+- [ ] `signal-red` — replace with `red-loss` or `green-gain` (discounts are gains)
+- [ ] `concrete-gray` — replace with `muted-foreground`
+- [ ] `font-display` — replace with `font-sans` (headings) or `font-mono` (data)
+
+Files: all `src/**/*.tsx`, `src/styles.css`
+
+---
+
+## T18. Verify build + visual check
+
+- Dependencies: T1-T17
+
+- [ ] `pnpm typecheck` passes
+- [ ] `pnpm build` succeeds
+- [ ] `pnpm dev` — visually verify:
+  - Dark background everywhere
+  - Green prices, red for errors only
+  - Monospace numbers
+  - Table view as default on deals feed
+  - Header with terminal branding
+  - Admin pages styled consistently
+  - No white flashes or broken layouts
+  - Focus rings visible and blue
+
+Files: none (verification only)
