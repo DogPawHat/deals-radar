@@ -4,16 +4,15 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 border-2 border-transparent bg-clip-padding text-sm font-bold uppercase tracking-wide transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 inline-flex items-center justify-center whitespace-nowrap outline-none group/button select-none",
+  "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 border border-transparent bg-clip-padding text-sm font-bold uppercase tracking-wide transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 inline-flex items-center justify-center whitespace-nowrap outline-none group/button select-none",
   {
     variants: {
       variant: {
-        default: "bg-black text-white border-black hover:bg-white hover:text-black",
-        destructive:
-          "bg-signal-red text-white border-signal-red hover:bg-white hover:text-signal-red",
-        outline: "bg-white text-black border-black hover:bg-black hover:text-white",
-        secondary: "bg-muted text-black border-black/20 hover:bg-black hover:text-white",
-        ghost: "hover:bg-muted hover:text-foreground dark:hover:bg-muted/50",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-input bg-transparent text-foreground hover:bg-secondary",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "text-muted-foreground hover:bg-secondary hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

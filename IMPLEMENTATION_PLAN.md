@@ -111,15 +111,15 @@ Files: `src/components/Header.tsx`
 
 - Dependencies: T1, T2
 
-- [ ] Rewrite CVA variants in `src/components/ui/button.tsx`:
+- [x] Rewrite CVA variants in `src/components/ui/button.tsx`:
   - `default` (primary): `bg-primary text-primary-foreground` hover lightens slightly
   - `destructive`: `bg-destructive text-destructive-foreground` hover lightens
   - `outline`: `border border-input bg-transparent text-foreground` hover `bg-secondary`
   - `secondary`: `bg-secondary text-secondary-foreground` hover lightens
   - `ghost`: `hover:bg-secondary text-muted-foreground hover:text-foreground`
   - `link`: `text-primary underline-offset-4 hover:underline`
-- [ ] Remove all hardcoded `bg-black`, `text-black`, `bg-white`, `text-white`, `border-black` references
-- [ ] Keep uppercase + tracking-wide + font-bold base styles (fits terminal aesthetic)
+- [x] Remove all hardcoded `bg-black`, `text-black`, `bg-white`, `text-white`, `border-black` references
+- [x] Keep uppercase + tracking-wide + font-bold base styles (fits terminal aesthetic)
 
 Files: `src/components/ui/button.tsx`
 
