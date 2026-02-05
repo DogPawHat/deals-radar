@@ -17,13 +17,16 @@ function ErrorBanner({
 }: ErrorBannerProps) {
   return (
     <div
-      className={cn("flex flex-col gap-3 border-2 border-black bg-error-bg p-4", className)}
+      className={cn(
+        "flex flex-col gap-3 border-l-2 border-red-loss bg-red-loss-muted p-4",
+        className,
+      )}
       {...props}
     >
-      <p className="font-bold text-black">{title}</p>
+      <p className="font-bold text-foreground">{title}</p>
       {children && <p className="text-sm text-muted-foreground">{children}</p>}
       {onRetry && (
-        <Button variant="default" size="sm" onClick={onRetry}>
+        <Button variant="secondary" size="sm" onClick={onRetry}>
           RETRY
         </Button>
       )}

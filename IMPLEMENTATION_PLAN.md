@@ -144,15 +144,15 @@ Files: `src/components/ui/card.tsx`
 
 - Dependencies: T1, T2, T5
 
-- [ ] `badge.tsx`: update variant colors for dark theme — `default` uses `bg-secondary text-foreground`, `destructive` uses `bg-red-loss-muted text-red-loss`
-- [ ] `tabs.tsx`:
+- [x] `badge.tsx`: update variant colors for dark theme — `default` uses `bg-secondary text-foreground`, `destructive` uses `bg-red-loss-muted text-red-loss`
+- [x] `tabs.tsx`:
   - Line variant active: change `after:bg-foreground` underline to `after:bg-green-gain`
   - Trigger text: inactive `text-muted-foreground`, active `text-foreground`
   - Remove any `bg-safety-yellow` or `border-black` references
-- [ ] `skeleton.tsx`: change `bg-muted` to `bg-card` with subtle shimmer (keep `animate-pulse`)
-- [ ] `discount-badge.tsx`: replace `bg-signal-red text-white font-display` with `bg-green-gain-muted text-green-gain font-mono font-semibold`
-- [ ] `error-banner.tsx`: replace `bg-error-bg border-2 border-black` with `bg-red-loss-muted border-l-2 border-red-loss text-foreground`; update retry button to `variant="secondary"`
-- [ ] `empty.tsx`: ensure `text-muted-foreground` is used (likely already fine)
+- [x] `skeleton.tsx`: change `bg-muted` to `bg-card` with subtle shimmer (keep `animate-pulse`)
+- [x] `discount-badge.tsx`: replace `bg-signal-red text-white font-display` with `bg-green-gain-muted text-green-gain font-mono font-semibold`
+- [x] `error-banner.tsx`: replace `bg-error-bg border-2 border-black` with `bg-red-loss-muted border-l-2 border-red-loss text-foreground`; update retry button to `variant="secondary"`
+- [x] `empty.tsx`: ensure `text-muted-foreground` is used (likely already fine)
 
 Files: `src/components/ui/badge.tsx`, `src/components/ui/tabs.tsx`, `src/components/ui/skeleton.tsx`, `src/components/ui/discount-badge.tsx`, `src/components/ui/error-banner.tsx`, `src/components/ui/empty.tsx`
 
