@@ -10,75 +10,44 @@
 @import "@fontsource/jetbrains-mono/600.css";
 @import "@fontsource/jetbrains-mono/700.css";
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0 0 0);
-  --primary: oklch(0 0 0);
+  --background: oklch(0.04 0 0);
+  --foreground: oklch(0.91 0.005 280);
+  --card: oklch(0.09 0 0);
+  --card-foreground: oklch(0.91 0.005 280);
+  --popover: oklch(0.09 0 0);
+  --popover-foreground: oklch(0.91 0.005 280);
+  --primary: oklch(0.62 0.19 250);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.96 0 0);
-  --secondary-foreground: oklch(0 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.42 0 0);
-  --accent: oklch(0.97 0.08 110);
-  --accent-foreground: oklch(0 0 0);
-  --destructive: oklch(0.6 0.2 25);
+  --secondary: oklch(0.12 0 0);
+  --secondary-foreground: oklch(0.91 0.005 280);
+  --muted: oklch(0.12 0 0);
+  --muted-foreground: oklch(0.46 0.005 280);
+  --accent: oklch(0.12 0 0);
+  --accent-foreground: oklch(0.91 0.005 280);
+  --destructive: oklch(0.59 0.23 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0 0 0);
-  --input: oklch(0 0 0);
-  --ring: oklch(0 0 0);
-  --radius: 0px;
-  --sidebar: oklch(0.96 0 0);
-  --sidebar-foreground: oklch(0 0 0);
-  --sidebar-primary: oklch(0 0 0);
+  --border: oklch(0.16 0 0);
+  --input: oklch(0.22 0 0);
+  --ring: oklch(0.62 0.19 250);
+  --radius: 4px;
+  --sidebar: oklch(0.09 0 0);
+  --sidebar-foreground: oklch(0.91 0.005 280);
+  --sidebar-primary: oklch(0.62 0.19 250);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.97 0.08 110);
-  --sidebar-accent-foreground: oklch(0 0 0);
-  --sidebar-border: oklch(0 0 0);
-  --sidebar-ring: oklch(0 0 0);
-  --color-safety-yellow: 97 0.08 110;
-  --color-signal-red: 0.65 0.21 25;
-  --color-concrete-gray: 0.42 0 0;
-  --color-success: 0.61 0.22 150;
-  --color-error-bg: oklch(0.97 0.02 25);
+  --sidebar-accent: oklch(0.12 0 0);
+  --sidebar-accent-foreground: oklch(0.91 0.005 280);
+  --sidebar-border: oklch(0.16 0 0);
+  --sidebar-ring: oklch(0.62 0.19 250);
+  --color-green-gain: 0.85 0.25 155;
+  --color-green-gain-muted: oklch(0.85 0.25 155 / 0.13);
+  --color-red-loss: 0.59 0.23 25;
+  --color-red-loss-muted: oklch(0.59 0.23 25 / 0.13);
+  --color-accent-amber: 0.77 0.17 75;
+  --color-success: 0.85 0.25 155;
   --font-display: "Geist Sans", sans-serif;
   --font-body: "Geist Sans", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
-}
-
-.dark {
-  --background: oklch(0.15 0 0);
-  --foreground: oklch(1 0 0);
-  --card: oklch(0.2 0 0);
-  --card-foreground: oklch(1 0 0);
-  --popover: oklch(0.2 0 0);
-  --popover-foreground: oklch(1 0 0);
-  --primary: oklch(0.97 0.08 110);
-  --primary-foreground: oklch(0 0 0);
-  --secondary: oklch(0.3 0 0);
-  --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.3 0 0);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.97 0.08 110);
-  --accent-foreground: oklch(0 0 0);
-  --destructive: oklch(0.6 0.2 25);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(1 0 0 / 15%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.7 0 0);
-  --sidebar: oklch(0.15 0 0);
-  --sidebar-foreground: oklch(1 0 0);
-  --sidebar-primary: oklch(0.97 0.08 110);
-  --sidebar-primary-foreground: oklch(0 0 0);
-  --sidebar-accent: oklch(0.97 0.08 110);
-  --sidebar-accent-foreground: oklch(0 0 0);
-  --sidebar-border: oklch(1 0 0 / 15%);
-  --sidebar-ring: oklch(0.7 0 0);
 }
 
 @theme inline {
@@ -113,18 +82,19 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --color-safety-yellow: oklch(var(--color-safety-yellow));
-  --color-signal-red: oklch(var(--color-signal-red));
-  --color-concrete-gray: oklch(var(--color-concrete-gray));
+  --color-green-gain: oklch(var(--color-green-gain));
+  --color-green-gain-muted: var(--color-green-gain-muted);
+  --color-red-loss: oklch(var(--color-red-loss));
+  --color-red-loss-muted: var(--color-red-loss-muted);
+  --color-accent-amber: oklch(var(--color-accent-amber));
   --color-success: oklch(var(--color-success));
-  --color-error-bg: var(--color-error-bg);
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius-4xl: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
+  --radius-4xl: 4px;
 }
 
 @layer base {
@@ -149,38 +119,38 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-black text-white border-2 border-black uppercase tracking-wide font-bold;
-    @apply hover:bg-white hover:text-black;
-    @apply disabled:bg-concrete-gray disabled:border-concrete-gray disabled:text-white disabled:cursor-not-allowed;
+    @apply bg-primary text-primary-foreground rounded-sm uppercase tracking-wide font-bold;
+    @apply hover:opacity-90;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
-    @apply bg-white text-black border-2 border-black uppercase tracking-wide font-bold;
-    @apply hover:bg-black hover:text-white;
-    @apply disabled:bg-concrete-gray disabled:border-concrete-gray disabled:text-white disabled:cursor-not-allowed;
+    @apply bg-secondary text-secondary-foreground border border-input rounded-sm uppercase tracking-wide font-bold;
+    @apply hover:bg-secondary/80;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .tab-active {
-    @apply bg-safety-yellow text-black border-b-3 border-black;
+    @apply text-foreground after:bg-green-gain;
   }
 
   .tab-inactive {
-    @apply bg-white text-black border-b border-black/20;
-    @apply hover:bg-muted;
+    @apply text-muted-foreground;
+    @apply hover:text-foreground;
   }
 
   .card-brutalist {
-    @apply bg-white border-2 border-black;
-    @apply hover:border-3 hover:border-black hover:bg-safety-yellow;
+    @apply bg-card border border-border rounded-sm;
+    @apply hover:bg-secondary;
   }
 
   .input-brutalist {
-    @apply bg-white border-2 border-black rounded-none;
-    @apply focus:ring-3 focus:ring-black focus:ring-offset-0 focus:outline-none;
+    @apply bg-background border border-input rounded-sm;
+    @apply focus:ring-2 focus:ring-ring focus:outline-none;
   }
 }
 
 :focus-visible {
-  outline: 3px solid #000000;
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
 }

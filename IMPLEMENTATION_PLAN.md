@@ -33,7 +33,7 @@ Files: `package.json`, `src/styles.css`
 
 Replace all `:root` and `.dark` tokens with a single dark-only token set. Remove the `.dark` class mechanism — the app is dark by default.
 
-- [ ] In `:root`, set new token values per SPEC:
+- [x] In `:root`, set new token values per SPEC:
 
 | Token                      | New Value               | Notes                           |
 | -------------------------- | ----------------------- | ------------------------------- |
@@ -57,7 +57,7 @@ Replace all `:root` and `.dark` tokens with a single dark-only token set. Remove
 | `--input`                  | `oklch(0.22 0 0)`       | #333338 (border-active)         |
 | `--ring`                   | `oklch(0.62 0.19 250)`  | #3B82F6 (accent-blue for focus) |
 
-- [ ] Replace brand colors:
+- [x] Replace brand colors:
 
 | Old Token               | New Token                | Value                                       |
 | ----------------------- | ------------------------ | ------------------------------------------- |
@@ -67,14 +67,14 @@ Replace all `:root` and `.dark` tokens with a single dark-only token set. Remove
 | `--color-success`       | keep, update             | `oklch(0.85 0.25 155)` (same as green-gain) |
 | `--color-error-bg`      | `--color-red-loss-muted` | `oklch(0.59 0.23 25 / 0.13)`                |
 
-- [ ] Add new tokens: `--color-green-gain-muted`: `oklch(0.85 0.25 155 / 0.13)`, `--color-accent-amber`: `oklch(0.77 0.17 75)` (#F59E0B)
-- [ ] Update `@theme inline` to expose new tokens as Tailwind utilities
-- [ ] Remove `.dark { ... }` block — no longer needed
-- [ ] Remove `@custom-variant dark` — no longer needed
-- [ ] Update `--radius` from `0px` to `4px`; update `--radius-sm` to `2px`, `--radius-md` to `4px`, `--radius-lg` to `4px`, leave `--radius-xl` through `--radius-4xl` at `4px`
-- [ ] Update `:focus-visible` from `3px solid #000000` to `2px solid var(--ring)` with `outline-offset: 2px`
-- [ ] Remove or rewrite `@layer components` classes (`.btn-primary`, `.btn-secondary`, `.tab-active`, `.tab-inactive`, `.card-brutalist`, `.input-brutalist`) — these are unused dead code but should either be removed or updated
-- [ ] Verify build: `pnpm build`
+- [x] Add new tokens: `--color-green-gain-muted`: `oklch(0.85 0.25 155 / 0.13)`, `--color-accent-amber`: `oklch(0.77 0.17 75)` (#F59E0B)
+- [x] Update `@theme inline` to expose new tokens as Tailwind utilities
+- [x] Remove `.dark { ... }` block — no longer needed
+  - [x] Remove `@custom-variant dark` — no longer needed
+- [x] Update `--radius` from `0px` to `4px`; update `--radius-sm` to `2px`, `--radius-md` to `4px`, `--radius-lg` to `4px`, leave `--radius-xl` through `--radius-4xl` at `4px`
+- [x] Update `:focus-visible` from `3px solid #000000` to `2px solid var(--ring)` with `outline-offset: 2px`
+- [x] Remove or rewrite `@layer components` classes (`.btn-primary`, `.btn-secondary`, `.tab-active`, `.tab-inactive`, `.card-brutalist`, `.input-brutalist`) — these are unused dead code but should either be removed or updated
+- [x] Verify build: `pnpm build`
 
 Files: `src/styles.css`
 
