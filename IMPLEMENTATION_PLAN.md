@@ -95,13 +95,13 @@ Files: `src/routes/__root.tsx`
 
 - Dependencies: T1, T2, T5
 
-- [ ] Replace current `Header.tsx` with dark terminal style:
+- [x] Replace current `Header.tsx` with dark terminal style:
   - Slim 48px bar: `h-12` (down from `h-16`)
   - Background: `bg-card` (surface color) with `border-b border-border`
   - Brand text: "DEALS" in `text-muted-foreground` + "RADAR" in `text-green-gain`, `font-mono` — both monospace
   - Admin button: `variant="ghost"` with `text-muted-foreground`
   - Container: widen to `max-w-[1400px]`
-- [ ] Replace all hardcoded `bg-white`, `border-black` classes
+- [x] Replace all hardcoded `bg-white`, `border-black` classes
 
 Files: `src/components/Header.tsx`
 

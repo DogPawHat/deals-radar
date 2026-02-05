@@ -6,21 +6,26 @@ export default function Header() {
   const { isSignedIn } = useAuth();
 
   return (
-    <header className="bg-white border-b-3 border-black sticky top-0 z-40">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <header className="bg-card border-b border-border sticky top-0 z-40">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-12">
           <Link to="/" className="flex items-center gap-2">
-            <span className="font-display font-black text-2xl uppercase tracking-wider">
-              DEALS RADAR
+            <span className="font-mono font-bold text-xl tracking-wider">
+              <span className="text-muted-foreground">DEALS</span>
+              <span className="text-green-gain">RADAR</span>
             </span>
           </Link>
 
           {isSignedIn && (
-            <a href="/admin/sources">
-              <Button variant="outline" size="sm">
+            <Link to="/admin/sources">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground"
+              >
                 ADMIN
               </Button>
-            </a>
+            </Link>
           )}
         </div>
       </div>
