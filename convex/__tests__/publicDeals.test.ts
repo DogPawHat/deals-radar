@@ -11,7 +11,7 @@ const modules = import.meta.glob([
 ]);
 
 describe("public deals queries", () => {
-  describe("getDealsNewest", () => {
+  describe("getDeals newest", () => {
     it("returns deals sorted by creation time (newest first)", async () => {
       const t = convexTest(schema, modules);
 
@@ -56,12 +56,15 @@ describe("public deals queries", () => {
         });
       });
 
-      const result = await t.query(api.publicDeals.getDealsNewest, { limit: 10 });
+      const result = await t.query(api.publicDeals.getDeals, {
+        sort: "newest",
+        paginationOpts: { cursor: null, numItems: 10 },
+      });
 
-      expect(result.deals).toHaveLength(3);
-      expect(result.deals[0]?.title).toBe("Deal 3");
-      expect(result.deals[1]?.title).toBe("Deal 2");
-      expect(result.deals[2]?.title).toBe("Deal 1");
+      expect(result.page).toHaveLength(3);
+      expect(result.page[0]?.title).toBe("Deal 3");
+      expect(result.page[1]?.title).toBe("Deal 2");
+      expect(result.page[2]?.title).toBe("Deal 1");
     });
 
     it("filters out deals with less than 5% discount", async () => {
@@ -108,11 +111,14 @@ describe("public deals queries", () => {
         });
       });
 
-      const result = await t.query(api.publicDeals.getDealsNewest, { limit: 10 });
+      const result = await t.query(api.publicDeals.getDeals, {
+        sort: "newest",
+        paginationOpts: { cursor: null, numItems: 10 },
+      });
 
-      expect(result.deals).toHaveLength(2);
+      expect(result.page).toHaveLength(2);
       expect(
-        result.deals.find((d: (typeof result.deals)[0]) => d.title === "Deal 2"),
+        result.page.find((d: (typeof result.page)[0]) => d.title === "Deal 2"),
       ).toBeUndefined();
     });
 
@@ -142,9 +148,12 @@ describe("public deals queries", () => {
         }
       });
 
-      const result = await t.query(api.publicDeals.getDealsNewest, { limit: 2 });
+      const result = await t.query(api.publicDeals.getDeals, {
+        sort: "newest",
+        paginationOpts: { cursor: null, numItems: 2 },
+      });
 
-      expect(result.deals).toHaveLength(2);
+      expect(result.page).toHaveLength(2);
     });
 
     it("returns empty array when no deals exist", async () => {
@@ -158,13 +167,16 @@ describe("public deals queries", () => {
         });
       });
 
-      const result = await t.query(api.publicDeals.getDealsNewest, { limit: 10 });
+      const result = await t.query(api.publicDeals.getDeals, {
+        sort: "newest",
+        paginationOpts: { cursor: null, numItems: 10 },
+      });
 
-      expect(result.deals).toHaveLength(0);
+      expect(result.page).toHaveLength(0);
     });
   });
 
-  describe("getDealsBiggestDrop", () => {
+  describe("getDeals biggestDrop", () => {
     it("returns deals sorted by percentOff (highest first)", async () => {
       const t = convexTest(schema, modules);
 
@@ -209,16 +221,19 @@ describe("public deals queries", () => {
         });
       });
 
-      const result = await t.query(api.publicDeals.getDealsBiggestDrop, { limit: 10 });
+      const result = await t.query(api.publicDeals.getDeals, {
+        sort: "biggestDrop",
+        paginationOpts: { cursor: null, numItems: 10 },
+      });
 
-      expect(result.deals).toHaveLength(3);
-      expect(result.deals[0]?.title).toBe("Deal 2");
-      expect(result.deals[1]?.title).toBe("Deal 3");
-      expect(result.deals[2]?.title).toBe("Deal 1");
+      expect(result.page).toHaveLength(3);
+      expect(result.page[0]?.title).toBe("Deal 2");
+      expect(result.page[1]?.title).toBe("Deal 3");
+      expect(result.page[2]?.title).toBe("Deal 1");
     });
   });
 
-  describe("getDealsByPrice", () => {
+  describe("getDeals price", () => {
     it("returns deals sorted by price (lowest first)", async () => {
       const t = convexTest(schema, modules);
 
@@ -263,16 +278,19 @@ describe("public deals queries", () => {
         });
       });
 
-      const result = await t.query(api.publicDeals.getDealsByPrice, { limit: 10 });
+      const result = await t.query(api.publicDeals.getDeals, {
+        sort: "price",
+        paginationOpts: { cursor: null, numItems: 10 },
+      });
 
-      expect(result.deals).toHaveLength(3);
-      expect(result.deals[0]?.title).toBe("Deal 2");
-      expect(result.deals[1]?.title).toBe("Deal 3");
-      expect(result.deals[2]?.title).toBe("Deal 1");
+      expect(result.page).toHaveLength(3);
+      expect(result.page[0]?.title).toBe("Deal 2");
+      expect(result.page[1]?.title).toBe("Deal 3");
+      expect(result.page[2]?.title).toBe("Deal 1");
     });
   });
 
-  describe("getDealsAll", () => {
+  describe("getDeals all", () => {
     it("returns deals without specific sorting", async () => {
       const t = convexTest(schema, modules);
 
@@ -307,9 +325,12 @@ describe("public deals queries", () => {
         });
       });
 
-      const result = await t.query(api.publicDeals.getDealsAll, { limit: 10 });
+      const result = await t.query(api.publicDeals.getDeals, {
+        sort: "all",
+        paginationOpts: { cursor: null, numItems: 10 },
+      });
 
-      expect(result.deals).toHaveLength(2);
+      expect(result.page).toHaveLength(2);
     });
   });
 });
