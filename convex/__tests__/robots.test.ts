@@ -107,8 +107,19 @@ Disallow: /admin/
 describe("fetchRobotsTxt", () => {
   it.effect("returns empty content for 404", () =>
     Effect.gen(function* () {
-      const result = yield* fetchRobotsTxt("https://example.com");
+      const fakeFetch = () => Promise.resolve(new Response("", { status: 404 }));
+
+      const result = yield* fetchRobotsTxt("https://example.com", fakeFetch);
       expect(result.content).toBe("");
+    }),
+  );
+
+  it.effect("returns RobotsFetchError when fetch throws", () =>
+    Effect.gen(function* () {
+      const fakeFetch = () => Promise.reject(new Error("TLS failed"));
+
+      const error = yield* fetchRobotsTxt("https://example.com", fakeFetch).pipe(Effect.flip);
+      expect(error._tag).toBe("RobotsFetchError");
     }),
   );
 });
@@ -116,7 +127,9 @@ describe("fetchRobotsTxt", () => {
 describe("fetchAndParseRobotsTxt", () => {
   it.effect("returns empty rules for 404", () =>
     Effect.gen(function* () {
-      const result = yield* fetchAndParseRobotsTxt("https://example.com");
+      const fakeFetch = () => Promise.resolve(new Response("", { status: 404 }));
+
+      const result = yield* fetchAndParseRobotsTxt("https://example.com", fakeFetch);
       expect(result.rules).toHaveLength(0);
       expect(result.isBlocked("/path")).toBe(false);
     }),

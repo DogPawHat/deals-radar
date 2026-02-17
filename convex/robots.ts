@@ -1,5 +1,7 @@
 import { Effect, Schema, Context, Layer } from "effect";
 
+type FetchLike = (input: URL | RequestInfo, init?: RequestInit) => Promise<Response>;
+
 export class RobotsParseError extends Schema.TaggedError<RobotsParseError>()("RobotsParseError", {
   message: Schema.String,
   error: Schema.Defect,
@@ -101,6 +103,7 @@ export const parseRobotsTxt = (content: string): Effect.Effect<ParsedRobotsTxt, 
 
 export const fetchRobotsTxt = (
   baseUrl: string,
+  fetchImpl: FetchLike = globalThis.fetch,
 ): Effect.Effect<{ content: string; url: string }, RobotsFetchError> =>
   Effect.tryPromise({
     try: async () => {
@@ -113,7 +116,7 @@ export const fetchRobotsTxt = (
         robotsUrl = new URL("/robots.txt", normalizedUrl);
       }
 
-      const response = await fetch(robotsUrl.toString());
+      const response = await fetchImpl(robotsUrl.toString());
 
       if (!response.ok && response.status !== 404) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -133,12 +136,13 @@ export const fetchRobotsTxt = (
 
 export const fetchAndParseRobotsTxt = (
   baseUrl: string,
+  fetchImpl: FetchLike = globalThis.fetch,
 ): Effect.Effect<
   { rules: RobotsRule[]; isBlocked: (path: string) => boolean },
   RobotsParseError | RobotsFetchError
 > =>
   Effect.gen(function* () {
-    const { content } = yield* fetchRobotsTxt(baseUrl);
+    const { content } = yield* fetchRobotsTxt(baseUrl, fetchImpl);
 
     if (!content) {
       return {
