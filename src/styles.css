@@ -1,100 +1,52 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource/geist-sans/400.css";
-@import "@fontsource/geist-sans/500.css";
-@import "@fontsource/geist-sans/600.css";
-@import "@fontsource/geist-sans/700.css";
-@import "@fontsource/jetbrains-mono/400.css";
-@import "@fontsource/jetbrains-mono/500.css";
-@import "@fontsource/jetbrains-mono/600.css";
-@import "@fontsource/jetbrains-mono/700.css";
-
-:root {
-  --background: oklch(0.04 0 0);
-  --foreground: oklch(0.91 0.005 280);
-  --card: oklch(0.09 0 0);
-  --card-foreground: oklch(0.91 0.005 280);
-  --popover: oklch(0.09 0 0);
-  --popover-foreground: oklch(0.91 0.005 280);
-  --primary: oklch(0.62 0.19 250);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.12 0 0);
-  --secondary-foreground: oklch(0.91 0.005 280);
-  --muted: oklch(0.12 0 0);
-  --muted-foreground: oklch(0.46 0.005 280);
-  --accent: oklch(0.12 0 0);
-  --accent-foreground: oklch(0.91 0.005 280);
-  --destructive: oklch(0.59 0.23 25);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.16 0 0);
-  --input: oklch(0.22 0 0);
-  --ring: oklch(0.62 0.19 250);
-  --radius: 4px;
-  --sidebar: oklch(0.09 0 0);
-  --sidebar-foreground: oklch(0.91 0.005 280);
-  --sidebar-primary: oklch(0.62 0.19 250);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.12 0 0);
-  --sidebar-accent-foreground: oklch(0.91 0.005 280);
-  --sidebar-border: oklch(0.16 0 0);
-  --sidebar-ring: oklch(0.62 0.19 250);
-  --color-green-gain: 0.85 0.25 155;
-  --color-green-gain-muted: oklch(0.85 0.25 155 / 0.13);
-  --color-red-loss: 0.59 0.23 25;
-  --color-red-loss-muted: oklch(0.59 0.23 25 / 0.13);
-  --color-accent-amber: 0.77 0.17 75;
-  --color-success: 0.85 0.25 155;
-  --font-display: "Geist Sans", sans-serif;
-  --font-body: "Geist Sans", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-}
+@import "@fontsource/outfit/400.css";
+@import "@fontsource/outfit/500.css";
+@import "@fontsource/outfit/600.css";
+@import "@fontsource/outfit/700.css";
+@import "@fontsource/outfit/800.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
 
 @theme inline {
-  --font-sans: "Geist Sans", sans-serif;
-  --font-display: "Geist Sans", sans-serif;
-  --font-body: "Geist Sans", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --color-green-gain: oklch(var(--color-green-gain));
-  --color-green-gain-muted: var(--color-green-gain-muted);
-  --color-red-loss: oklch(var(--color-red-loss));
-  --color-red-loss-muted: var(--color-red-loss-muted);
-  --color-accent-amber: oklch(var(--color-accent-amber));
-  --color-success: oklch(var(--color-success));
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 4px;
-  --radius-xl: 4px;
-  --radius-2xl: 4px;
-  --radius-3xl: 4px;
-  --radius-4xl: 4px;
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  --color-background: #ffffff;
+  --color-foreground: #1a1a1a;
+  --color-card: #ffffff;
+  --color-card-foreground: #1a1a1a;
+  --color-muted: #f0f0f0;
+  --color-muted-foreground: #666666;
+  --color-primary: #f5e642;
+  --color-primary-foreground: #1a1a1a;
+  --color-secondary: #f0f0f0;
+  --color-secondary-foreground: #1a1a1a;
+  --color-border: #1a1a1a;
+  --color-input: #1a1a1a;
+  --color-ring: #f5e642;
+  --color-destructive: #ff3b3b;
+  --color-destructive-foreground: #ffffff;
+  --color-accent: #f5e642;
+  --color-accent-foreground: #1a1a1a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #1a1a1a;
+
+  --color-green-gain: #ff3b8b;
+  --color-green-gain-muted: #ff3b8b1a;
+  --color-red-loss: #ff3b3b;
+  --color-red-loss-muted: #ff3b3b1a;
+  --color-accent-amber: #f5e642;
+  --color-success: #ff3b8b;
+
+  --radius-sm: 8px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --radius-2xl: 8px;
+  --radius-3xl: 8px;
+  --radius-4xl: 8px;
 }
 
 @layer base {
@@ -105,7 +57,11 @@
     @apply font-sans antialiased;
   }
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground;
+    min-height: 100vh;
+    background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-attachment: fixed;
   }
   h1,
   h2,
@@ -118,39 +74,53 @@
 }
 
 @layer components {
+  .neo-shadow {
+    box-shadow: 4px 4px 0 #1a1a1a;
+  }
+
+  .neo-shadow-sm {
+    box-shadow: 2px 2px 0 #1a1a1a;
+  }
+
+  .neo-shadow-lg {
+    box-shadow: 6px 6px 0 #1a1a1a;
+  }
+
+  .neo-shadow-yellow {
+    box-shadow: 4px 4px 0 #f5e642;
+  }
+
+  .neo-shadow-pink {
+    box-shadow: 4px 4px 0 #ff3b8b;
+  }
+
   .btn-primary {
-    @apply bg-primary text-primary-foreground rounded-sm uppercase tracking-wide font-bold;
-    @apply hover:opacity-90;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-primary text-primary-foreground rounded-sm uppercase tracking-wide font-bold border-2 border-foreground;
+    box-shadow: 4px 4px 0 #1a1a1a;
   }
 
-  .btn-secondary {
-    @apply bg-secondary text-secondary-foreground border border-input rounded-sm uppercase tracking-wide font-bold;
-    @apply hover:bg-secondary/80;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  .btn-primary:hover {
+    box-shadow: 2px 2px 0 #1a1a1a;
+    transform: translate(2px, 2px);
   }
 
-  .tab-active {
-    @apply text-foreground after:bg-green-gain;
-  }
-
-  .tab-inactive {
-    @apply text-muted-foreground;
-    @apply hover:text-foreground;
+  .btn-primary:active {
+    box-shadow: 0 0 0 #1a1a1a;
+    transform: translate(4px, 4px);
   }
 
   .card-brutalist {
-    @apply bg-card border border-border rounded-sm;
-    @apply hover:bg-secondary;
+    @apply bg-card border-2 border-foreground rounded-sm;
+    box-shadow: 4px 4px 0 #1a1a1a;
   }
 
-  .input-brutalist {
-    @apply bg-background border border-input rounded-sm;
-    @apply focus:ring-2 focus:ring-ring focus:outline-none;
+  .card-brutalist:hover {
+    box-shadow: 2px 2px 0 #1a1a1a;
+    transform: translate(2px, 2px);
   }
 }
 
 :focus-visible {
-  outline: 2px solid var(--ring);
+  outline: 3px solid var(--color-primary);
   outline-offset: 2px;
 }

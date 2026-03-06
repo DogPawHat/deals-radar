@@ -49,8 +49,8 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => voi
 const SkeletonGrid = () => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
     {Array.from({ length: 8 }).map((_, i) => (
-      <div key={i} className="bg-card rounded-sm">
-        <div className="aspect-240/160 bg-secondary" />
+      <div key={i} className="neo-shadow rounded-sm border-2 border-foreground bg-card">
+        <div className="aspect-240/160 border-b-2 border-foreground bg-secondary" />
         <div className="p-4 space-y-2">
           <Skeleton className="h-5 w-3/4" />
           <Skeleton className="h-4 w-1/2" />
@@ -88,17 +88,20 @@ export function DealsFeed() {
   if (status === "LoadingFirstPage") {
     return (
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-          <div className="flex gap-1 bg-muted p-0.75 rounded-lg">
+        <div className="flex flex-col justify-between gap-4 border-b-2 border-foreground pb-4 sm:flex-row sm:items-center">
+          <div className="flex w-fit flex-wrap gap-2">
             {TAB_CONFIG.map((tab) => (
-              <div key={tab.value} className="px-6 py-2 font-sans font-bold uppercase text-sm">
+              <div
+                key={tab.value}
+                className="neo-shadow-sm rounded-sm border-2 border-foreground bg-muted px-6 py-2 text-sm font-extrabold uppercase tracking-[0.14em]"
+              >
                 {tab.label}
               </div>
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-secondary rounded-sm" />
-            <div className="w-9 h-9 bg-card border border-border rounded-sm" />
+            <div className="size-9 rounded-sm border-2 border-foreground bg-primary neo-shadow-sm" />
+            <div className="size-9 rounded-sm border-2 border-foreground bg-card neo-shadow-sm" />
           </div>
         </div>
         <SkeletonGrid />
@@ -109,7 +112,7 @@ export function DealsFeed() {
   if (status === "Exhausted" && deals.length === 0) {
     return (
       <div className="text-center py-16">
-        <h2 className="font-sans font-bold text-4xl uppercase tracking-wide text-muted-foreground">
+        <h2 className="text-4xl font-extrabold uppercase tracking-[0.18em] text-muted-foreground">
           NO DEALS FOUND
         </h2>
       </div>
@@ -118,18 +121,11 @@ export function DealsFeed() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+      <div className="flex flex-col justify-between gap-4 border-b-2 border-foreground pb-4 sm:flex-row sm:items-center">
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)}>
           <TabsList variant="line">
             {TAB_CONFIG.map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className={cn(
-                  "px-6 py-2 font-sans font-bold uppercase tracking-wide text-sm",
-                  "hover:text-foreground",
-                )}
-              >
+              <TabsTrigger key={tab.value} value={tab.value} className={cn("px-6 py-2 text-sm")}>
                 {tab.label}
               </TabsTrigger>
             ))}
@@ -175,6 +171,7 @@ export function DealsFeed() {
             size="xl"
             onClick={() => loadMore(PAGE_SIZE)}
             disabled={isFetchingNextPage}
+            className="min-w-52"
           >
             {isFetchingNextPage ? "LOADING..." : "LOAD MORE"}
             <ChevronDown className="ml-2 size-4" />

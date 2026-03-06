@@ -38,7 +38,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Deals Radar - Latest Deals",
+        title: "DEALS RADAR",
       },
     ],
     links: [
@@ -81,7 +81,7 @@ function RootOutlet({ children }: { children: React.ReactNode }) {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <HeadContent />
       </head>
