@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DealsIdRouteImport } from './routes/deals/$id'
 import { Route as AdminSourcesRouteImport } from './routes/admin/sources'
 
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -38,12 +44,14 @@ const AdminSourcesRoute = AdminSourcesRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/demo': typeof DemoRoute
   '/admin/sources': typeof AdminSourcesRoute
   '/deals/$id': typeof DealsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/demo': typeof DemoRoute
   '/admin/sources': typeof AdminSourcesRoute
   '/deals/$id': typeof DealsIdRoute
 }
@@ -51,25 +59,34 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/demo': typeof DemoRoute
   '/admin/sources': typeof AdminSourcesRoute
   '/deals/$id': typeof DealsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin/sources' | '/deals/$id'
+  fullPaths: '/' | '/admin' | '/demo' | '/admin/sources' | '/deals/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/admin/sources' | '/deals/$id'
-  id: '__root__' | '/' | '/admin' | '/admin/sources' | '/deals/$id'
+  to: '/' | '/admin' | '/demo' | '/admin/sources' | '/deals/$id'
+  id: '__root__' | '/' | '/admin' | '/demo' | '/admin/sources' | '/deals/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  DemoRoute: typeof DemoRoute
   DealsIdRoute: typeof DealsIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -114,6 +131,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  DemoRoute: DemoRoute,
   DealsIdRoute: DealsIdRoute,
 }
 export const routeTree = rootRouteImport
