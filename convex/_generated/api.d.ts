@@ -9,19 +9,12 @@
  */
 
 import type * as admin_sources from "../admin/sources.js";
-import type * as confect from "../confect.js";
 import type * as crawlJobs from "../crawlJobs.js";
 import type * as crawls from "../crawls.js";
 import type * as deals from "../deals.js";
-import type * as eSchemas from "../eSchemas.js";
-import type * as env from "../env.js";
-import type * as firecrawlNodeActions from "../firecrawlNodeActions.js";
-import type * as index from "../index.js";
-import type * as lib_dedup from "../lib/dedup.js";
-import type * as lib_effect from "../lib/effect.js";
+import type * as node_firecrawlNodeActions from "../node/firecrawlNodeActions.js";
 import type * as priceHistory from "../priceHistory.js";
 import type * as publicDeals from "../publicDeals.js";
-import type * as robots from "../robots.js";
 import type * as stores from "../stores.js";
 
 import type {
@@ -32,19 +25,12 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "admin/sources": typeof admin_sources;
-  confect: typeof confect;
   crawlJobs: typeof crawlJobs;
   crawls: typeof crawls;
   deals: typeof deals;
-  eSchemas: typeof eSchemas;
-  env: typeof env;
-  firecrawlNodeActions: typeof firecrawlNodeActions;
-  index: typeof index;
-  "lib/dedup": typeof lib_dedup;
-  "lib/effect": typeof lib_effect;
+  "node/firecrawlNodeActions": typeof node_firecrawlNodeActions;
   priceHistory: typeof priceHistory;
   publicDeals: typeof publicDeals;
-  robots: typeof robots;
   stores: typeof stores;
 }>;
 

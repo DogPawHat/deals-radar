@@ -24,7 +24,7 @@ const config = defineConfig({
     viteReact(),
   ],
   test: {
-    projects: ["convex/vitest.config.ts"],
+    projects: ["vitest.convex.config.ts"],
   },
 });
 
