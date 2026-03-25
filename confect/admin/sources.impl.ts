@@ -1,5 +1,5 @@
 import { FunctionImpl, GroupImpl } from "@confect/server";
-import { DatabaseReader, DatabaseWriter, MutationCtx, QueryCtx } from "../_generated/services";
+import { DatabaseReader, DatabaseWriter, MutationCtx } from "../_generated/services";
 import { Effect, Layer } from "effect";
 
 import api from "../_generated/api";
@@ -37,9 +37,13 @@ const previewRobotsResult = (url: string) =>
 
 const listStores = FunctionImpl.make(api, "admin.sources", "listStores", () =>
   Effect.gen(function* () {
-    const ctx = yield* QueryCtx;
+    const reader = yield* DatabaseReader;
 
-    const stores = yield* Effect.promise(() => ctx.db.query("stores").collect()).pipe(Effect.orDie);
+    const stores = yield* reader
+      .table("stores")
+      .index("by_creation_time")
+      .collect()
+      .pipe(Effect.orDie);
     const storesWithStats = [] as Array<{
       _id: (typeof stores)[number]["_id"];
       name: string;
@@ -53,19 +57,17 @@ const listStores = FunctionImpl.make(api, "admin.sources", "listStores", () =>
     }>;
 
     for (const store of stores) {
-      const deals = yield* Effect.promise(() =>
-        ctx.db
-          .query("deals")
-          .withIndex("by_storeId", (q) => q.eq("storeId", store._id))
-          .collect(),
-      ).pipe(Effect.orDie);
+      const deals = yield* reader
+        .table("deals")
+        .index("by_storeId", (q) => q.eq("storeId", store._id))
+        .collect()
+        .pipe(Effect.orDie);
 
-      const jobs = yield* Effect.promise(() =>
-        ctx.db
-          .query("crawlJobs")
-          .withIndex("by_storeId", (q) => q.eq("storeId", store._id))
-          .collect(),
-      ).pipe(Effect.orDie);
+      const jobs = yield* reader
+        .table("crawlJobs")
+        .index("by_storeId", (q) => q.eq("storeId", store._id))
+        .collect()
+        .pipe(Effect.orDie);
 
       const sortedJobs = [...jobs].sort((a, b) => b.enqueuedAt - a.enqueuedAt);
       const lastJob = sortedJobs[0];
@@ -186,15 +188,13 @@ const runNow = FunctionImpl.make(api, "admin.sources", "runNow", ({ storeId }) =
 const getStore = FunctionImpl.make(api, "admin.sources", "getStore", ({ storeId }) =>
   Effect.gen(function* () {
     const reader = yield* DatabaseReader;
-    const ctx = yield* QueryCtx;
 
     const store = yield* reader.table("stores").get(storeId).pipe(Effect.orDie);
-    const jobs = yield* Effect.promise(() =>
-      ctx.db
-        .query("crawlJobs")
-        .withIndex("by_storeId", (q) => q.eq("storeId", storeId))
-        .collect(),
-    ).pipe(Effect.orDie);
+    const jobs = yield* reader
+      .table("crawlJobs")
+      .index("by_storeId", (q) => q.eq("storeId", storeId))
+      .collect()
+      .pipe(Effect.orDie);
 
     return {
       store: {

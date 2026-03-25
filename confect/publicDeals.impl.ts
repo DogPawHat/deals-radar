@@ -1,64 +1,40 @@
 import { FunctionImpl, GroupImpl } from "@confect/server";
-import { DatabaseReader, QueryCtx } from "./_generated/services";
+import { DatabaseReader } from "./_generated/services";
 import { Effect, Layer, Option } from "effect";
 
 import api from "./_generated/api";
 
 const MIN_DISCOUNT = 4.99;
 
-const normalizePage = <
-  T extends {
-    page: unknown;
-    isDone: boolean;
-    continueCursor: string;
-    splitCursor?: string | null;
-    pageStatus?: "SplitRecommended" | "SplitRequired" | null;
-  },
->(
-  result: T,
-) => ({
-  ...result,
-  splitCursor: result.splitCursor ?? null,
-  pageStatus: result.pageStatus ?? null,
-});
-
 const getDeals = FunctionImpl.make(api, "publicDeals", "getDeals", ({ paginationOpts, sort }) =>
   Effect.gen(function* () {
-    const ctx = yield* QueryCtx;
+    const reader = yield* DatabaseReader;
 
     switch (sort) {
       case "newest":
-        return yield* Effect.promise(() =>
-          ctx.db
-            .query("deals")
-            .order("desc")
-            .filter((q) => q.gt(q.field("percentOff"), MIN_DISCOUNT))
-            .paginate(paginationOpts),
-        ).pipe(Effect.map(normalizePage), Effect.orDie);
+        return yield* reader
+          .table("deals")
+          .index("by_creation_time", "desc")
+          .paginate(paginationOpts)
+          .pipe(Effect.orDie);
       case "biggestDrop":
-        return yield* Effect.promise(() =>
-          ctx.db
-            .query("deals")
-            .withIndex("by_percentOff", (q) => q.gt("percentOff", MIN_DISCOUNT))
-            .order("desc")
-            .paginate(paginationOpts),
-        ).pipe(Effect.map(normalizePage), Effect.orDie);
+        return yield* reader
+          .table("deals")
+          .index("by_percentOff", (q) => q.gt("percentOff", MIN_DISCOUNT), "desc")
+          .paginate(paginationOpts)
+          .pipe(Effect.orDie);
       case "price":
-        return yield* Effect.promise(() =>
-          ctx.db
-            .query("deals")
-            .withIndex("by_price")
-            .order("asc")
-            .filter((q) => q.gt(q.field("percentOff"), MIN_DISCOUNT))
-            .paginate(paginationOpts),
-        ).pipe(Effect.map(normalizePage), Effect.orDie);
+        return yield* reader
+          .table("deals")
+          .index("by_price")
+          .paginate(paginationOpts)
+          .pipe(Effect.orDie);
       case "all":
-        return yield* Effect.promise(() =>
-          ctx.db
-            .query("deals")
-            .withIndex("by_percentOff", (q) => q.gt("percentOff", MIN_DISCOUNT))
-            .paginate(paginationOpts),
-        ).pipe(Effect.map(normalizePage), Effect.orDie);
+        return yield* reader
+          .table("deals")
+          .index("by_percentOff", (q) => q.gt("percentOff", MIN_DISCOUNT))
+          .paginate(paginationOpts)
+          .pipe(Effect.orDie);
     }
   }),
 );

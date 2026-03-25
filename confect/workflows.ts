@@ -1,6 +1,5 @@
 import { Effect } from "effect";
 import { components } from "../convex/_generated/api.js";
-import type { WorkflowManager } from "@convex-dev/workflow";
 import { defineWorkflow, WorkflowContext } from "confect-workflow/server";
 
 import { AgentStateCompleted } from "./lib/schemas.js";
@@ -11,7 +10,7 @@ type WorkflowContextType = WorkflowContext extends { Type: infer T } ? T : never
 type ExtractedDeals = typeof AgentStateCompleted.fields.data.Type;
 
 export const extractSourceWorkflowDefinition = defineWorkflow(
-  components.workflow as ConstructorParameters<typeof WorkflowManager>[0],
+  components.workflow,
   extractSourceWorkflow,
   {
     handler: (args) =>
