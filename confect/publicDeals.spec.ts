@@ -18,6 +18,7 @@ export const publicDealsSpec = GroupSpec.make("publicDeals")
       args: Schema.Struct({
         sort: GetDealsSort,
         paginationOpts: Schema.Struct({
+          id: Schema.optional(Schema.Literal(1.0)), // Temporary arg to force pagination for testing
           cursor: Schema.NullOr(Schema.String),
           endCursor: Schema.optional(Schema.String),
           maximumRowsRead: Schema.optional(Schema.Number),
