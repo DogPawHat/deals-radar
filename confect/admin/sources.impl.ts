@@ -1,9 +1,9 @@
 import { FunctionImpl, GroupImpl } from "@confect/server";
-import { DatabaseReader, DatabaseWriter, MutationCtx, QueryCtx } from "../../_generated/services";
+import { DatabaseReader, DatabaseWriter, MutationCtx, QueryCtx } from "../_generated/services";
 import { Effect, Layer } from "effect";
 
-import api from "../../_generated/api";
-import { fetchAndParseRobotsTxt } from "../../../server/robots";
+import api from "../_generated/api";
+import { fetchAndParseRobotsTxt } from "../lib/robots";
 
 const COOLDOWN_MS = 3 * 60 * 1000;
 

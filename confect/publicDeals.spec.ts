@@ -1,7 +1,7 @@
 import { FunctionSpec, GenericId, GroupSpec, PaginationResult } from "@confect/core";
 import { Schema } from "effect";
 
-import { deals } from "../schema";
+import { deals } from "./schema";
 
 const GetDealsSort = Schema.Literal("newest", "biggestDrop", "price", "all");
 

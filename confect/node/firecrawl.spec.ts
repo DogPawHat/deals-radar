@@ -1,7 +1,7 @@
 import { FunctionSpec, GroupSpec } from "@confect/core";
 import { Schema } from "effect";
 
-import { agentStateUnion } from "../../server/eSchemas";
+import { agentStateUnion } from "../lib/schemas";
 
 export const firecrawlNodeActionsSpec = GroupSpec.makeNode("firecrawlNodeActions")
   .addFunction(

@@ -6,7 +6,7 @@ import {
   AgentStateFailed,
   AgentJob,
   DealExtraction,
-} from "../../server/eSchemas";
+} from "../../confect/lib/schemas";
 import {
   FirecrawlOperationsContext,
   FirecrawlApiErrorStartAgent,

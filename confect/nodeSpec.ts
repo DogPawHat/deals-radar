@@ -1,5 +1,5 @@
 import { Spec } from "@confect/core";
 
-import { firecrawlNodeActionsSpec } from "./nodeSpec/firecrawlNodeActions";
+import { firecrawlNodeActionsSpec } from "./node/firecrawl.spec";
 
 export default Spec.makeNode().add(firecrawlNodeActionsSpec);

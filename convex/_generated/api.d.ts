@@ -16,6 +16,7 @@ import type * as node_firecrawlNodeActions from "../node/firecrawlNodeActions.js
 import type * as priceHistory from "../priceHistory.js";
 import type * as publicDeals from "../publicDeals.js";
 import type * as stores from "../stores.js";
+import type * as workflows from "../workflows.js";
 
 import type {
   ApiFromModules,
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   priceHistory: typeof priceHistory;
   publicDeals: typeof publicDeals;
   stores: typeof stores;
+  workflows: typeof workflows;
 }>;
 
 /**
@@ -306,7 +308,7 @@ export declare const components: {
       cleanup: FunctionReference<
         "mutation",
         "internal",
-        { workflowId: string },
+        { force?: boolean; workflowId: string },
         boolean
       >;
       complete: FunctionReference<
@@ -512,6 +514,12 @@ export declare const components: {
           pageStatus?: "SplitRecommended" | "SplitRequired" | null;
           splitCursor?: string | null;
         }
+      >;
+      restart: FunctionReference<
+        "mutation",
+        "internal",
+        { from?: number | string; startAsync?: boolean; workflowId: string },
+        null
       >;
     };
   };

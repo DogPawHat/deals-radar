@@ -7,7 +7,7 @@ import {
   AgentStatePending,
   AgentStateFailed,
   agentStateUnion,
-} from "../../server/eSchemas";
+} from "../../confect/lib/schemas";
 
 describe("DealExtraction Schema", () => {
   const validDeal = {

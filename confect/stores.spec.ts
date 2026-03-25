@@ -1,7 +1,7 @@
 import { FunctionSpec, GenericId, GroupSpec } from "@confect/core";
 import { Schema } from "effect";
 
-import { stores } from "../schema";
+import { stores } from "./schema.js";
 
 export const storesSpec = GroupSpec.make("stores")
   .addFunction(

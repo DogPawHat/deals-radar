@@ -1,9 +1,9 @@
 import { FunctionImpl, GroupImpl } from "@confect/server";
-import { MutationCtx } from "../_generated/services";
+import { MutationCtx } from "./_generated/services";
 import { Effect, Layer } from "effect";
 import type { GenericId } from "convex/values";
 
-import api from "../_generated/api";
+import api from "./_generated/api";
 
 const CRAWL_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const COOLDOWN_MS = 3 * 60 * 1000;

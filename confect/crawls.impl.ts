@@ -1,9 +1,9 @@
 import { FunctionImpl, GroupImpl } from "@confect/server";
-import { DatabaseReader, DatabaseWriter } from "../_generated/services";
+import { DatabaseReader, DatabaseWriter } from "./_generated/services";
 import { Effect, Layer } from "effect";
 
-import api from "../_generated/api";
-import { buildDedupKey } from "../../server/lib/dedup";
+import api from "./_generated/api";
+import { buildDedupKey } from "./lib/dedup";
 
 const success = { success: true } as const;
 

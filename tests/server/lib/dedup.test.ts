@@ -6,7 +6,7 @@ import {
   createHash,
   buildDedupKey,
   DROP_PARAMS,
-} from "../../../server/lib/dedup";
+} from "../../../confect/lib/dedup";
 
 describe("normalizeTitle", () => {
   it("trims whitespace", () => {

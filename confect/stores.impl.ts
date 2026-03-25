@@ -1,8 +1,8 @@
 import { FunctionImpl, GroupImpl } from "@confect/server";
-import { DatabaseReader, DatabaseWriter } from "../_generated/services";
+import { DatabaseReader, DatabaseWriter } from "./_generated/services";
 import { Effect, Layer } from "effect";
 
-import api from "../_generated/api";
+import api from "./_generated/api";
 
 const getById = FunctionImpl.make(api, "stores", "getById", ({ storeId }) =>
   Effect.gen(function* () {

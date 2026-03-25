@@ -1,6 +1,6 @@
 import { describe, it, expect } from "@effect/vitest";
 import { Effect, Schema } from "effect";
-import { decode, tagError } from "../../../server/lib/effect";
+import { decode, tagError } from "../../../confect/lib/effect";
 
 describe("decode", () => {
   const stringSchema = Schema.String;

@@ -1,7 +1,7 @@
 import { FunctionSpec, GenericId, GroupSpec } from "@confect/core";
 import { Schema } from "effect";
 
-import { DealExtractions } from "../../server/eSchemas";
+import { DealExtractions } from "./lib/schemas";
 
 const SuccessResult = Schema.Struct({
   success: Schema.Literal(true),

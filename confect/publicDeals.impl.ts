@@ -1,8 +1,8 @@
 import { FunctionImpl, GroupImpl } from "@confect/server";
-import { DatabaseReader, QueryCtx } from "../_generated/services";
+import { DatabaseReader, QueryCtx } from "./_generated/services";
 import { Effect, Layer, Option } from "effect";
 
-import api from "../_generated/api";
+import api from "./_generated/api";
 
 const MIN_DISCOUNT = 4.99;
 

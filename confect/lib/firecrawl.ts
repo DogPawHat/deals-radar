@@ -9,7 +9,7 @@ import {
   AgentStateFailed,
   AgentStatePending,
   DealExtractions,
-} from "../../server/eSchemas";
+} from "./schemas";
 
 const extractDealsPrompt = `
   You are a helpful assistant that extracts deals from a web store.

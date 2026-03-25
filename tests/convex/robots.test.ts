@@ -1,6 +1,6 @@
 import { describe, it, expect } from "@effect/vitest";
 import { Effect } from "effect";
-import { parseRobotsTxt, fetchRobotsTxt, fetchAndParseRobotsTxt } from "../../server/robots";
+import { parseRobotsTxt, fetchRobotsTxt, fetchAndParseRobotsTxt } from "../../confect/lib/robots";
 
 describe("parseRobotsTxt", () => {
   it.effect("parses basic allow/disallow rules", () =>

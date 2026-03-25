@@ -1,12 +1,13 @@
 import { Spec } from "@confect/core";
 
-import { adminSpec } from "./spec/admin";
-import { crawlJobsSpec } from "./spec/crawlJobs";
-import { crawlsSpec } from "./spec/crawls";
-import { dealsSpec } from "./spec/deals";
-import { priceHistorySpec } from "./spec/priceHistory";
-import { publicDealsSpec } from "./spec/publicDeals";
-import { storesSpec } from "./spec/stores";
+import { adminSpec } from "./admin.spec";
+import { crawlJobsSpec } from "./crawlJobs.spec";
+import { crawlsSpec } from "./crawls.spec";
+import { dealsSpec } from "./deals.spec";
+import { priceHistorySpec } from "./priceHistory.spec";
+import { publicDealsSpec } from "./publicDeals.spec";
+import { storesSpec } from "./stores.spec";
+import { workflowsSpec } from "./workflows.spec";
 
 export default Spec.make()
   .add(adminSpec)
@@ -15,4 +16,5 @@ export default Spec.make()
   .add(dealsSpec)
   .add(priceHistorySpec)
   .add(publicDealsSpec)
-  .add(storesSpec);
+  .add(storesSpec)
+  .add(workflowsSpec);
