@@ -32,12 +32,6 @@ export function getRouter() {
     defaultPreload: "intent",
     context: { queryClient, convexClient: convex, convexQueryClient },
     scrollRestoration: true,
-    defaultErrorComponent: ({ error }) => (
-      <div>
-        <h1>Error</h1>
-        <p>{error.message}</p>
-      </div>
-    ),
     Wrap: (props: { children: React.ReactNode }) => (
       <ConvexProvider client={convex}>{props.children}</ConvexProvider>
     ),

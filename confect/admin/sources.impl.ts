@@ -1,11 +1,28 @@
 import { FunctionImpl, GroupImpl } from "@confect/server";
-import { DatabaseReader, DatabaseWriter, MutationCtx } from "../_generated/services";
-import { Effect, Layer } from "effect";
+import { makeFunctionReference } from "convex/server";
+import {
+  ActionCtx,
+  DatabaseReader,
+  DatabaseWriter,
+  MutationCtx,
+  Scheduler,
+} from "../_generated/services";
+import { Duration, Effect, Layer } from "effect";
 
 import api from "../_generated/api";
 import { fetchAndParseRobotsTxt } from "../lib/robots";
 
 const COOLDOWN_MS = 3 * 60 * 1000;
+const refreshStoreRobotsRulesAction = makeFunctionReference<
+  "action",
+  { storeId: string; url: string },
+  null
+>("admin/sources:refreshStoreRobotsRules");
+const updateStoreRobotsRulesMutation = makeFunctionReference<
+  "mutation",
+  { storeId: string; robotsRules?: string },
+  null
+>("admin/sources:updateStoreRobotsRules");
 
 const previewRobotsResult = (url: string) =>
   Effect.gen(function* () {
@@ -93,21 +110,53 @@ const previewRobots = FunctionImpl.make(api, "admin.sources", "previewRobots", (
   previewRobotsResult(url),
 );
 
+const updateStoreRobotsRules = FunctionImpl.make(
+  api,
+  "admin.sources",
+  "updateStoreRobotsRules",
+  ({ robotsRules, storeId }) =>
+    Effect.gen(function* () {
+      const writer = yield* DatabaseWriter;
+      yield* writer.table("stores").patch(storeId, { robotsRules }).pipe(Effect.orDie);
+      return null;
+    }),
+);
+
+const refreshStoreRobotsRules = FunctionImpl.make(
+  api,
+  "admin.sources",
+  "refreshStoreRobotsRules",
+  ({ storeId, url }) =>
+    Effect.gen(function* () {
+      const ctx = yield* ActionCtx;
+      let robotsRules: string | undefined;
+
+      try {
+        const result = yield* fetchAndParseRobotsTxt(url.trim()).pipe(Effect.orDie);
+        const lines = result.rules.map((rule) =>
+          rule.allow ? `Allow: ${rule.allow}` : `Disallow: ${rule.disallow}`,
+        );
+        robotsRules = lines.join("\n");
+      } catch {
+        robotsRules = undefined;
+      }
+
+      yield* Effect.promise(() =>
+        ctx.runMutation(updateStoreRobotsRulesMutation, {
+          storeId,
+          robotsRules,
+        }),
+      ).pipe(Effect.orDie);
+
+      return null;
+    }),
+);
+
 const createStore = FunctionImpl.make(api, "admin.sources", "createStore", ({ name, url }) =>
   Effect.gen(function* () {
     const db = yield* DatabaseWriter;
+    const scheduler = yield* Scheduler;
     const trimmedUrl = url.trim();
-    let robotsRules: string | undefined;
-
-    try {
-      const result = yield* fetchAndParseRobotsTxt(trimmedUrl).pipe(Effect.orDie);
-      const lines = result.rules.map((rule) =>
-        rule.allow ? `Allow: ${rule.allow}` : `Disallow: ${rule.disallow}`,
-      );
-      robotsRules = lines.join("\n");
-    } catch {
-      robotsRules = undefined;
-    }
 
     const storeId = yield* db
       .table("stores")
@@ -115,8 +164,11 @@ const createStore = FunctionImpl.make(api, "admin.sources", "createStore", ({ na
         name: name.trim(),
         url: trimmedUrl,
         isCrawling: false,
-        robotsRules,
       })
+      .pipe(Effect.orDie);
+
+    yield* scheduler
+      .runAfter(Duration.millis(0), refreshStoreRobotsRulesAction, { storeId, url: trimmedUrl })
       .pipe(Effect.orDie);
 
     return { storeId };
@@ -218,27 +270,24 @@ const updateStore = FunctionImpl.make(
     Effect.gen(function* () {
       const reader = yield* DatabaseReader;
       const writer = yield* DatabaseWriter;
+      const scheduler = yield* Scheduler;
+      const trimmedUrl = url.trim();
 
       yield* reader.table("stores").get(storeId).pipe(Effect.orDie);
-
-      let robotsRules: string | undefined;
-
-      try {
-        const result = yield* fetchAndParseRobotsTxt(url.trim()).pipe(Effect.orDie);
-        const lines = result.rules.map((rule) =>
-          rule.allow ? `Allow: ${rule.allow}` : `Disallow: ${rule.disallow}`,
-        );
-        robotsRules = lines.join("\n");
-      } catch {
-        robotsRules = undefined;
-      }
 
       yield* writer
         .table("stores")
         .patch(storeId, {
           name: name.trim(),
-          url: url.trim(),
-          robotsRules,
+          url: trimmedUrl,
+          robotsRules: undefined,
+        })
+        .pipe(Effect.orDie);
+
+      yield* scheduler
+        .runAfter(Duration.millis(0), refreshStoreRobotsRulesAction, {
+          storeId,
+          url: trimmedUrl,
         })
         .pipe(Effect.orDie);
 
@@ -257,6 +306,8 @@ const deleteStore = FunctionImpl.make(api, "admin.sources", "deleteStore", ({ st
 export const sources = GroupImpl.make(api, "admin.sources").pipe(
   Layer.provide(listStores),
   Layer.provide(previewRobots),
+  Layer.provide(updateStoreRobotsRules),
+  Layer.provide(refreshStoreRobotsRules),
   Layer.provide(createStore),
   Layer.provide(runNow),
   Layer.provide(getStore),

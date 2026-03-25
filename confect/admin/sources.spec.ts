@@ -22,7 +22,7 @@ export const sourcesSpec = GroupSpec.make("sources")
     }),
   )
   .addFunction(
-    FunctionSpec.publicQuery({
+    FunctionSpec.publicAction({
       name: "previewRobots",
       args: Schema.Struct({
         url: Schema.String,
@@ -31,6 +31,26 @@ export const sourcesSpec = GroupSpec.make("sources")
         rules: Schema.String,
         error: Schema.optional(Schema.String),
       }),
+    }),
+  )
+  .addFunction(
+    FunctionSpec.internalMutation({
+      name: "updateStoreRobotsRules",
+      args: Schema.Struct({
+        storeId: GenericId.GenericId("stores"),
+        robotsRules: Schema.optional(Schema.String),
+      }),
+      returns: Schema.Null,
+    }),
+  )
+  .addFunction(
+    FunctionSpec.internalAction({
+      name: "refreshStoreRobotsRules",
+      args: Schema.Struct({
+        storeId: GenericId.GenericId("stores"),
+        url: Schema.String,
+      }),
+      returns: Schema.Null,
     }),
   )
   .addFunction(

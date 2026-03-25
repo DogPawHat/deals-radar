@@ -22,7 +22,7 @@ interface MyRouterContext {
 const fetchClerkAuth = createServerFn({ method: "GET" }).handler(async () => {
   const { userId, getToken } = await auth();
 
-  const token = await getToken({ template: "convex" });
+  const token = await getToken();
 
   return { userId, token };
 });
@@ -49,19 +49,27 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
   beforeLoad: async ({ context }) => {
-    const auth = await fetchClerkAuth();
-    const { userId, token } = auth;
+    try {
+      const auth = await fetchClerkAuth();
+      const { userId, token } = auth;
 
-    // During SSR only (the only time serverHttpClient exists),
-    // set the Clerk auth token to make HTTP queries with.
-    if (token) {
-      context.convexQueryClient.serverHttpClient?.setAuth(token);
+      // During SSR only (the only time serverHttpClient exists),
+      // set the Clerk auth token to make HTTP queries with.
+      if (token) {
+        context.convexQueryClient.serverHttpClient?.setAuth(token);
+      }
+
+      return {
+        userId,
+        token,
+      };
+    } catch (err) {
+      console.error("Error fetching Clerk auth:", err);
+      return {
+        userId: null,
+        token: null,
+      };
     }
-
-    return {
-      userId,
-      token,
-    };
   },
 
   shellComponent: RootDocument,

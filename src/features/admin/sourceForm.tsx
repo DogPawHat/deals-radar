@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useConvexMutation } from "@convex-dev/react-query";
 import { api } from "@convex/_generated/api.js";
 import { Id } from "@convex/_generated/dataModel.js";
+import { FunctionReference } from "convex/server";
+import { useAction } from "convex/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +32,14 @@ export function SourceForm({ mode, storeId, initialValues, onCancel, onSuccess }
   const queryClient = useQueryClient();
   const createStore = useConvexMutation(api.admin.sources.createStore);
   const updateStore = useConvexMutation(api.admin.sources.updateStore);
+  const previewRobots = useAction(
+    api.admin.sources.previewRobots as unknown as FunctionReference<
+      "action",
+      "public",
+      { url: string },
+      { rules: string; error?: string }
+    >,
+  );
 
   const [name, setName] = useState(initialValues?.name ?? "");
   const [url, setUrl] = useState(initialValues?.url ?? "");
@@ -38,32 +48,15 @@ export function SourceForm({ mode, storeId, initialValues, onCancel, onSuccess }
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [robotsPreview, setRobotsPreview] = useState(initialValues?.robotsRules ?? "");
 
-  const previewQuery = useQuery({
-    ...convexQuery(api.admin.sources.previewRobots, { url: previewUrl ?? "" }),
-    enabled: false,
-  });
-
   useEffect(() => {
     if (!previewUrl) {
       setRobotsPreview(initialValues?.robotsRules ?? "");
     }
   }, [initialValues?.robotsRules, previewUrl]);
-
-  useEffect(() => {
-    if (previewUrl) {
-      void previewQuery.refetch();
-    }
-  }, [previewQuery, previewUrl]);
-
-  useEffect(() => {
-    if (previewQuery.data) {
-      setRobotsPreview(previewQuery.data.rules ?? "");
-    }
-  }, [previewQuery.data]);
-
-  const previewError = previewUrl ? (previewQuery.data?.error ?? null) : null;
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const previewHint = useMemo(() => {
-    if (previewQuery.isFetching) {
+    if (isPreviewLoading) {
       return "Fetching robots.txt preview...";
     }
 
@@ -76,19 +69,33 @@ export function SourceForm({ mode, storeId, initialValues, onCancel, onSuccess }
     }
 
     return "Robots preview updates when you leave the URL field.";
-  }, [previewError, previewQuery.isFetching, robotsPreview]);
+  }, [isPreviewLoading, previewError, robotsPreview]);
 
   const handleUrlBlur = () => {
     const trimmed = url.trim();
     if (!trimmed) {
       setPreviewUrl(null);
-      return;
-    }
-    if (previewUrl === trimmed) {
-      void previewQuery.refetch();
+      setPreviewError(null);
       return;
     }
     setPreviewUrl(trimmed);
+    void (async () => {
+      setIsPreviewLoading(true);
+      try {
+        const result = await previewRobots({ url: trimmed });
+        setRobotsPreview(result.rules ?? "");
+        setPreviewError(result.error ?? null);
+      } catch (error) {
+        const message =
+          typeof error === "object" && error && "message" in error
+            ? String(error.message)
+            : "Unable to fetch robots.txt";
+        setRobotsPreview("");
+        setPreviewError(message);
+      } finally {
+        setIsPreviewLoading(false);
+      }
+    })();
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
