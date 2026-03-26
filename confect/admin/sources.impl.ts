@@ -24,34 +24,6 @@ const updateStoreRobotsRulesMutation = makeFunctionReference<
   null
 >("admin/sources:updateStoreRobotsRules");
 
-const previewRobotsResult = (url: string) =>
-  Effect.gen(function* () {
-    const trimmedUrl = url.trim();
-
-    if (!trimmedUrl) {
-      return { rules: "", error: "URL is required" };
-    }
-
-    return yield* Effect.catchAll(
-      Effect.gen(function* () {
-        const result = yield* fetchAndParseRobotsTxt(trimmedUrl);
-        const lines = result.rules.map((rule) =>
-          rule.allow ? `Allow: ${rule.allow}` : `Disallow: ${rule.disallow}`,
-        );
-
-        return { rules: lines.join("\n") };
-      }),
-      (error) => {
-        const message =
-          typeof error === "object" && error && "message" in error
-            ? String((error as { message: unknown }).message)
-            : "Unable to fetch robots.txt";
-
-        return Effect.succeed({ rules: "", error: message });
-      },
-    );
-  });
-
 const listStores = FunctionImpl.make(api, "admin.sources", "listStores", () =>
   Effect.gen(function* () {
     const reader = yield* DatabaseReader;
@@ -104,10 +76,6 @@ const listStores = FunctionImpl.make(api, "admin.sources", "listStores", () =>
 
     return storesWithStats;
   }),
-);
-
-const previewRobots = FunctionImpl.make(api, "admin.sources", "previewRobots", ({ url }) =>
-  previewRobotsResult(url),
 );
 
 const updateStoreRobotsRules = FunctionImpl.make(
@@ -305,7 +273,6 @@ const deleteStore = FunctionImpl.make(api, "admin.sources", "deleteStore", ({ st
 
 export const sources = GroupImpl.make(api, "admin.sources").pipe(
   Layer.provide(listStores),
-  Layer.provide(previewRobots),
   Layer.provide(updateStoreRobotsRules),
   Layer.provide(refreshStoreRobotsRules),
   Layer.provide(createStore),

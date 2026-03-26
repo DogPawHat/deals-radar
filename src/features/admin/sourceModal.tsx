@@ -79,7 +79,6 @@ export function SourceModal({ open, onOpenChange, storeId }: SourceModalProps) {
               initialValues={{
                 name: store.name,
                 url: store.url,
-                robotsRules: store.robotsRules ?? "",
               }}
               onCancel={() => onOpenChange(false)}
               onSuccess={() => onOpenChange(false)}

@@ -31,7 +31,7 @@ export function DealCard({ deal, view = "grid" }: DealCardProps) {
     return (
       <a href={`/deals/${deal._id}`}>
         <Card className="group/card flex cursor-pointer flex-row items-center gap-4 p-4">
-          <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-sm border-2 border-foreground bg-secondary">
+          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-sm border-2 border-foreground bg-secondary">
             {deal.image ? (
               <img src={deal.image} alt={deal.title} className="w-full h-full object-cover" />
             ) : (
@@ -44,7 +44,7 @@ export function DealCard({ deal, view = "grid" }: DealCardProps) {
               {deal.store?.name ?? "Unknown Store"}
             </p>
           </CardContent>
-          <div className="text-right flex-shrink-0">
+          <div className="text-right shrink-0">
             <div className="font-mono text-xl font-bold text-green-gain">{currentPrice}</div>
             {originalPrice && (
               <div className="font-mono text-sm text-muted-foreground line-through">
@@ -63,7 +63,7 @@ export function DealCard({ deal, view = "grid" }: DealCardProps) {
   return (
     <a href={`/deals/${deal._id}`}>
       <Card className="h-full cursor-pointer group/card">
-        <div className="relative aspect-[240/160] w-full overflow-hidden border-b-2 border-foreground bg-secondary">
+        <div className="relative aspect-240/160 w-full overflow-hidden border-b-2 border-foreground bg-secondary">
           {deal.image ? (
             <img src={deal.image} alt={deal.title} className="w-full h-full object-cover" />
           ) : (

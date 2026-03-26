@@ -22,18 +22,6 @@ export const sourcesSpec = GroupSpec.make("sources")
     }),
   )
   .addFunction(
-    FunctionSpec.publicAction({
-      name: "previewRobots",
-      args: Schema.Struct({
-        url: Schema.String,
-      }),
-      returns: Schema.Struct({
-        rules: Schema.String,
-        error: Schema.optional(Schema.String),
-      }),
-    }),
-  )
-  .addFunction(
     FunctionSpec.internalMutation({
       name: "updateStoreRobotsRules",
       args: Schema.Struct({

@@ -25,9 +25,21 @@ interface StoreWithStats {
   lastJobAt?: number | null;
 }
 
-function formatRelativeTime(timestamp: number): string {
-  const now = Date.now();
-  const diff = now - timestamp;
+function useNowTimestamp(intervalMs = 1000) {
+  const [nowTimestamp, setNowTimestamp] = useState(() => Date.now());
+
+  useEffect(() => {
+    const updateNowTimestamp = () => setNowTimestamp(Date.now());
+    const interval = setInterval(updateNowTimestamp, intervalMs);
+
+    return () => clearInterval(interval);
+  }, [intervalMs]);
+
+  return nowTimestamp;
+}
+
+function formatRelativeTime(timestamp: number, nowTimestamp: number): string {
+  const diff = nowTimestamp - timestamp;
 
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
@@ -73,18 +85,20 @@ function StoreCard({
   onEdit,
   onDelete,
   cooldownRemainingMs,
+  nowTimestamp,
 }: {
   store: StoreWithStats;
   onRunNow: (storeId: Id<"stores">) => void;
   onEdit: (storeId: Id<"stores">) => void;
   onDelete: (storeId: Id<"stores">) => void;
   cooldownRemainingMs: number;
+  nowTimestamp: number;
 }) {
   const [showMenu, setShowMenu] = useState(false);
 
   const isCooldownActive = cooldownRemainingMs > 0;
   const canRun = !store.isCrawling && !isCooldownActive;
-  const lastCrawl = store.lastJobAt ? formatRelativeTime(store.lastJobAt) : "never";
+  const lastCrawl = store.lastJobAt ? formatRelativeTime(store.lastJobAt, nowTimestamp) : "never";
   const cooldownLabel = isCooldownActive ? formatCooldown(cooldownRemainingMs) : null;
 
   return (
@@ -192,7 +206,7 @@ export function SourcesList() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingStoreId, setEditingStoreId] = useState<Id<"stores"> | null>(null);
   const [cooldownByStore, setCooldownByStore] = useState<Record<string, number>>({});
-  const [now, setNow] = useState(() => Date.now());
+  const nowTimestamp = useNowTimestamp();
 
   const {
     data: stores,
@@ -202,11 +216,6 @@ export function SourcesList() {
 
   const runNow = useConvexMutation(api.admin.sources.runNow);
   const deleteStore = useConvexMutation(api.admin.sources.deleteStore);
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleRunNow = async (storeId: Id<"stores">) => {
     const result = await runNow({ storeId });
@@ -248,11 +257,11 @@ export function SourcesList() {
     const result: Record<string, number> = {};
 
     Object.entries(cooldownByStore).forEach(([storeId, cooldownUntil]) => {
-      result[storeId] = Math.max(0, cooldownUntil - now);
+      result[storeId] = Math.max(0, cooldownUntil - nowTimestamp);
     });
 
     return result;
-  }, [cooldownByStore, now]);
+  }, [cooldownByStore, nowTimestamp]);
 
   if (error) {
     return (
@@ -325,6 +334,7 @@ export function SourcesList() {
                 onEdit={handleEditSource}
                 onDelete={handleDelete}
                 cooldownRemainingMs={cooldownRemainingMs}
+                nowTimestamp={nowTimestamp}
               />
             );
           })}
